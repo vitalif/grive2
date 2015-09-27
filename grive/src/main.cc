@@ -193,6 +193,7 @@ int Main( int argc, char **argv )
 
 	if ( vm.count( "dry-run" ) == 0 )
 	{
+        //drive.Rename("./hello.txt", "./hello_changed.txt");
 		drive.Update() ;
 		drive.SaveState() ;
 	}

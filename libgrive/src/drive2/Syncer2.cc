@@ -88,6 +88,45 @@ bool Syncer2::Create( Resource *res )
 	return Upload( res );
 }
 
+bool Syncer2::Rename( Resource *res, fs::path new_p)
+{
+    if ( res->ResourceID().empty() )
+    {
+        Log("Can't rename file %1%, no server id found", res->Name());
+        return false;
+    }
+    
+	Val meta;
+	meta.Add( "title", Val(new_p.filename().string()) );
+	if ( res->IsFolder() )
+	{
+		meta.Add( "mimeType", Val( mime_types::folder ) );
+	}
+	if ( !res->Parent()->IsRoot() )
+	{
+		Val parent;
+		parent.Add( "id", Val( res->Parent()->ResourceID() ) );
+		Val parents( Val::array_type );
+		parents.Add( parent );
+		meta.Add( "parents", parents );
+	}
+	std::string json_meta = WriteJson( meta );
+
+	Val valr ;
+
+	// Issue metadata update request
+	{
+		http::Header hdr2 ;
+		hdr2.Add( "Content-Type: application/json" );
+		http::ValResponse vrsp ;
+		long http_code = 0;
+		http_code = m_http->Put( feeds::files + "/" + res->ResourceID(), json_meta, &vrsp, hdr2 ) ;
+		valr = vrsp.Response();
+		assert( !( valr["id"].Str().empty() ) );
+	}
+    return true;
+}
+
 bool Syncer2::Upload( Resource *res )
 {
 	Val meta;

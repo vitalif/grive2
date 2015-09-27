@@ -314,4 +314,17 @@ void State::ChangeStamp( long cstamp )
 	m_cstamp = cstamp ;
 }
 
+bool State::Rename(Syncer* syncer, fs::path old_p, fs::path new_p)
+{
+    Resource* res = m_res.Root();
+    for (fs::path::iterator it = old_p.begin(); it != old_p.end(); ++it)
+    {
+        if (*it != ".")
+            res = res->FindChild(it->string());
+    }
+    fs::rename(old_p, new_p);
+    syncer->Rename(res, new_p);
+    return true;
+}
+
 } // end of namespace gr

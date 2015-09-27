@@ -63,6 +63,7 @@ public :
 	
 	long ChangeStamp() const ;
 	void ChangeStamp( long cstamp ) ;
+    bool Rename(Syncer* syncer, fs::path old_p, fs::path new_p);
 	
 private :
 	void FromLocal( const fs::path& p, Resource *folder ) ;

@@ -155,6 +155,11 @@ void Drive::DetectChanges()
 	}
 }
 
+bool Drive::Rename(fs::path old_p, fs::path new_p)
+{
+    return m_state.Rename(m_syncer, old_p, new_p);
+}
+
 void Drive::Update()
 {
 	Log( "Synchronizing files", log::info ) ;
