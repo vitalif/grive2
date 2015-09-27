@@ -120,7 +120,8 @@ bool Syncer2::Rename( Resource *res, fs::path new_p)
 		hdr2.Add( "Content-Type: application/json" );
 		http::ValResponse vrsp ;
 		long http_code = 0;
-		http_code = m_http->Put( feeds::files + "/" + res->ResourceID(), json_meta, &vrsp, hdr2 ) ;
+        //Don't want to change the modified date since we're only renaming.
+		http_code = m_http->Put( feeds::files + "/" + res->ResourceID() + "?modifiedDateBehavior=noChange", json_meta, &vrsp, hdr2 ) ;
 		valr = vrsp.Response();
 		assert( !( valr["id"].Str().empty() ) );
 	}
