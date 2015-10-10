@@ -20,10 +20,12 @@
 #pragma once
 
 #include <string>
+#include "ResponseLog.hh"
+#include "util/Types.hh"
 
 namespace gr {
 
-class DataStream ;
+class SeekStream ;
 class File ;
 
 namespace http {
@@ -35,32 +37,36 @@ class Agent
 public :
 	virtual ~Agent() {}
 
+	virtual ResponseLog* GetLog() const = 0 ;
+	virtual void SetLog( ResponseLog* ) = 0 ;
+
 	virtual long Put(
 		const std::string&	url,
 		const std::string&	data,
 		DataStream			*dest,
-		const Header&		hdr ) = 0 ;
+		const Header&		hdr ) ;
 
 	virtual long Put(
 		const std::string&	url,
 		File				*file,
 		DataStream			*dest,
-		const Header&		hdr ) = 0 ;
+		const Header&		hdr ) ;
 		
 	virtual long Get(
 		const std::string& 	url,
 		DataStream			*dest,
-		const Header&		hdr ) = 0 ;
+		const Header&		hdr ) ;
 	
 	virtual long Post(
 		const std::string& 	url,
 		const std::string&	data,
 		DataStream			*dest,
-		const Header&		hdr ) = 0 ;
+		const Header&		hdr ) ;
 	
-	virtual long Custom(
+	virtual long Request(
 		const std::string&	method,
 		const std::string&	url,
+		SeekStream			*in,
 		DataStream			*dest,
 		const Header&		hdr ) = 0 ;
 	

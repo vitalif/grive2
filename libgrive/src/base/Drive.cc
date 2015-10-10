@@ -85,7 +85,7 @@ void Drive::FromChange( const Entry& entry )
 
 void Drive::SaveState()
 {
-	m_state.Write( state_file ) ;
+	m_state.Write( m_root / state_file ) ;
 }
 
 void Drive::SyncFolders( )
@@ -129,9 +129,6 @@ void Drive::DetectChanges()
 	Log( "Reading remote server file list", log::info ) ;
 	std::auto_ptr<Feed> feed = m_syncer->GetAll() ;
 
-	if ( m_options["log-xml"].Bool() )
-		feed->EnableLog( "/tmp/file", ".xml" ) ;
-	
 	while ( feed->GetNext( m_syncer->Agent() ) )
 	{
 		std::for_each(
@@ -144,8 +141,6 @@ void Drive::DetectChanges()
 	{
 		Log( "Detecting changes from last sync", log::info ) ;
 		feed = m_syncer->GetChanges( prev_stamp+1 ) ;
-		if ( m_options["log-xml"].Bool() )
-			feed->EnableLog( "/tmp/changes", ".xml" ) ;
 		while ( feed->GetNext( m_syncer->Agent() ) )
 		{
 			std::for_each(

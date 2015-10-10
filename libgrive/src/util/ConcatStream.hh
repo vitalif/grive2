@@ -1,6 +1,6 @@
 /*
-	grive: an GPL program to sync a local directory with Google Drive
-	Copyright (C) 2012  Wan Wai Ho
+	A stream representing a concatenation of several underlying streams
+	Copyright (C) 2015 Vitaliy Filippov
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -17,27 +17,32 @@
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
-#include "Feed.hh"
+#pragma once
 
-#include "Entry.hh"
+#include "DataStream.hh"
 
-#include "http/Agent.hh"
+#include <vector>
 
 namespace gr {
 
-Feed::Feed( const std::string &url ):
-	m_next( url )
+class ConcatStream : public SeekStream
 {
-}
+public :
+	ConcatStream() ;
 
-Feed::iterator Feed::begin() const
-{
-	return m_entries.begin() ;
-}
+	std::size_t Read( char *data, std::size_t size ) ;
+	std::size_t Write( const char *data, std::size_t size ) ;
 
-Feed::iterator Feed::end() const
-{
-	return m_entries.end() ;
-}
+	off_t Seek( off_t offset, int whence ) ;
+	off_t Tell() const ;
+	u64_t Size() const ;
 
-} // end of namespace gr::v1
+	void Append( SeekStream *stream ) ;
+
+private :
+	std::vector<SeekStream*> m_streams ;
+	off_t m_size, m_pos ;
+	int m_cur ;
+} ;
+
+} // end of namespace
