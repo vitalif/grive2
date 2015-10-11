@@ -79,24 +79,24 @@ bool Syncer2::Create( Resource *res )
 	assert( res->Parent()->IsFolder() ) ;
 	assert( res->Parent()->GetState() == Resource::sync ) ;
 	assert( res->ResourceID().empty() ) ;
-	
+
 	if ( !res->Parent()->IsEditable() )
 	{
 		Log( "Cannot upload %1%: parent directory read-only. %2%", res->Name(), res->StateStr(), log::warning ) ;
 		return false ;
 	}
-	
+
 	return Upload( res );
 }
 
-bool Syncer2::Rename( Resource *res, fs::path new_p)
+bool Syncer2::Move( Resource *res, fs::path new_p)
 {
     if ( res->ResourceID().empty() )
     {
         Log("Can't rename file %1%, no server id found", res->Name());
         return false;
     }
-    
+
 	Val meta;
 	meta.Add( "title", Val(new_p.filename().string()) );
 	if ( res->IsFolder() )

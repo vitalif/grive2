@@ -45,11 +45,11 @@ public :
 public :
 	explicit State( const fs::path& filename, const Val& options ) ;
 	~State() ;
-	
+
 	void FromLocal( const fs::path& p ) ;
 	void FromRemote( const Entry& e ) ;
 	void ResolveEntry() ;
-	
+
 	void Read( const fs::path& filename ) ;
 	void Write( const fs::path& filename ) const ;
 
@@ -57,14 +57,14 @@ public :
 	Resource* FindByID( const std::string& id ) ;
 
 	void Sync( Syncer *syncer, const Val& options ) ;
-	
+
 	iterator begin() ;
 	iterator end() ;
-	
+
 	long ChangeStamp() const ;
 	void ChangeStamp( long cstamp ) ;
-    bool Rename(Syncer* syncer, fs::path old_p, fs::path new_p);
-	
+	bool Move( Syncer* syncer, fs::path old_p, fs::path new_p );
+
 private :
 	void FromLocal( const fs::path& p, Resource *folder ) ;
 	void FromChange( const Entry& e ) ;
@@ -72,7 +72,7 @@ private :
 	std::size_t TryResolveEntry() ;
 
 	bool IsIgnore( const std::string& filename ) ;
-	
+
 private :
 	ResourceTree		m_res ;
 	DateTime			m_last_sync ;
@@ -80,7 +80,7 @@ private :
 	int					m_cstamp ;
 	std::string			m_dir ;
 	boost::regex		m_ign ;
-	
+
 	std::vector<Entry>	m_unresolved ;
 } ;
 

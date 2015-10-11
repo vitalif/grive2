@@ -35,9 +35,9 @@ public :
 	Syncer2( http::Agent *http );
 
 	void DeleteRemote( Resource *res );
-    bool EditContent( Resource *res, bool new_rev );
+	bool EditContent( Resource *res, bool new_rev );
 	bool Create( Resource *res );
-    bool Rename( Resource *res, fs::path new_p);
+	bool Move( Resource *res, fs::path new_p);
 
 	std::auto_ptr<Feed> GetFolders();
 	std::auto_ptr<Feed> GetAll();

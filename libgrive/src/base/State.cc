@@ -40,7 +40,7 @@ State::State( const fs::path& filename, const Val& options  ) :
 	m_ign		( !options["ignore"].Str().empty() ? options["ignore"].Str()+"|^\\.(grive|grive_state|trash)" : "^\\.(grive|grive_state|trash)" )
 {
 	Read( filename ) ;
-	
+
 	// the "-f" option will make grive always think remote is newer
 	Val force ;
 	if ( options.Get("force", force) && force.Bool() )
@@ -48,7 +48,7 @@ State::State( const fs::path& filename, const Val& options  ) :
 		m_last_change = DateTime() ;
 		m_last_sync = DateTime::Now() ;
 	}
-	
+
 	Log( "last server change time: %1%; last sync time: %2%", m_last_change, m_last_sync, log::verbose ) ;
 }
 
@@ -80,19 +80,19 @@ void State::FromLocal( const fs::path& p, Resource* folder )
 	{
 		std::string fname = i->path().filename().string() ;
 		fs::file_status st = fs::status(i->path());
-	
+
 		std::string path = folder->IsRoot() ? fname : ( folder->RelPath() / fname ).string();
 		if ( IsIgnore( path ) )
 			Log( "file %1% is ignored by grive", path, log::verbose ) ;
-		
+
 		// check if it is ignored
 		else if ( folder == m_res.Root() && m_dir != "" && fname != m_dir )
 			Log( "%1% %2% is ignored", st.type() == fs::directory_file ? "folder" : "file", fname, log::verbose );
-		
+
 		// check for broken symblic links
 		else if ( st.type() == fs::file_not_found )
 			Log( "file %1% doesn't exist (broken link?), ignored", i->path(), log::verbose ) ;
-		
+
 		else
 		{
 			bool is_dir = st.type() == fs::directory_file;
@@ -105,9 +105,9 @@ void State::FromLocal( const fs::path& p, Resource* folder )
 				folder->AddChild( c ) ;
 				m_res.Insert( c ) ;
 			}
-			
+
 			c->FromLocal( m_last_sync ) ;
-			
+
 			if ( is_dir )
 				FromLocal( *i, c ) ;
 		}
@@ -125,10 +125,10 @@ void State::FromRemote( const Entry& e )
 	// common checkings
 	else if ( !e.IsDir() && (fn.empty() || e.ContentSrc().empty()) )
 		Log( "%1% \"%2%\" is a google document, ignored", k, e.Name(), log::verbose ) ;
-	
+
 	else if ( fn.find('/') != fn.npos )
 		Log( "%1% \"%2%\" contains a slash in its name, ignored", k, e.Name(), log::verbose ) ;
-	
+
 	else if ( !e.IsChange() && e.ParentHrefs().size() != 1 )
 		Log( "%1% \"%2%\" has multiple parents, ignored", k, e.Name(), log::verbose ) ;
 
@@ -154,7 +154,7 @@ std::size_t State::TryResolveEntry()
 
 	std::size_t count = 0 ;
 	std::vector<Entry>& en = m_unresolved ;
-	
+
 	for ( std::vector<Entry>::iterator i = en.begin() ; i != en.end() ; )
 	{
 		if ( Update( *i ) )
@@ -171,7 +171,7 @@ std::size_t State::TryResolveEntry()
 void State::FromChange( const Entry& e )
 {
 	assert( e.IsChange() ) ;
-	
+
 	// entries in the change feed is always treated as newer in remote,
 	// so we override the last sync time to 0
 	if ( Resource *res = m_res.FindByHref( e.SelfHref() ) )
@@ -213,7 +213,7 @@ bool State::Update( const Entry& e )
 			// since we are updating the ID and Href, we need to remove it and re-add it.
 			m_res.Update( child, e, m_last_change ) ;
 		}
-		
+
 		// folder entry exist in google drive, but not local. we should create
 		// the directory
 		else if ( e.IsDir() || !e.Filename().empty() )
@@ -222,11 +222,11 @@ bool State::Update( const Entry& e )
 			child = new Resource( name, e.IsDir() ? "folder" : "file" ) ;
 			parent->AddChild( child ) ;
 			m_res.Insert( child ) ;
-			
+
 			// update the state of the resource
 			m_res.Update( child, e, m_last_change ) ;
 		}
-		
+
 		return true ;
 	}
 	else
@@ -274,16 +274,16 @@ void State::Write( const fs::path& filename ) const
 	Val last_sync ;
 	last_sync.Add( "sec",	Val( (int)m_last_sync.Sec() ) );
 	last_sync.Add( "nsec",	Val( (unsigned)m_last_sync.NanoSec() ) );
-	
+
 	Val last_change ;
 	last_change.Add( "sec",	Val( (int)m_last_change.Sec() ) );
 	last_change.Add( "nsec",	Val( (unsigned)m_last_change.NanoSec() ) );
-	
+
 	Val result ;
 	result.Add( "last_sync", last_sync ) ;
 	result.Add( "last_change", last_change ) ;
 	result.Add( "change_stamp", Val(m_cstamp) ) ;
-	
+
 	std::ofstream fs( filename.string().c_str() ) ;
 	fs << result ;
 }
@@ -299,7 +299,7 @@ void State::Sync( Syncer *syncer, const Val& options )
 	// need to check if this introduces a new problem
 	DateTime last_change_time = m_last_change;
 	m_res.Root()->Sync( syncer, last_change_time, options ) ;
-	
+
 	if ( last_change_time == m_last_change )
 		Trace( "nothing changed at the server side since %1%", m_last_change ) ;
 	else
@@ -321,7 +321,7 @@ void State::ChangeStamp( long cstamp )
 	m_cstamp = cstamp ;
 }
 
-bool State::Rename(Syncer* syncer, fs::path old_p, fs::path new_p)
+bool State::Move( Syncer* syncer, fs::path old_p, fs::path new_p )
 {
     Resource* res = m_res.Root();
     for (fs::path::iterator it = old_p.begin(); it != old_p.end(); ++it)
@@ -330,7 +330,7 @@ bool State::Rename(Syncer* syncer, fs::path old_p, fs::path new_p)
             res = res->FindChild(it->string());
     }
     fs::rename(old_p, new_p);
-    syncer->Rename(res, new_p);
+    syncer->Move(res, new_p);
     return true;
 }
 

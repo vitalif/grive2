@@ -41,19 +41,19 @@ public :
 	Drive( Syncer *syncer, const Val& options ) ;
 
 	void DetectChanges() ;
-    bool Rename(fs::path old_p, fs::path new_p);
+	bool Move( fs::path old_p, fs::path new_p);
 	void Update() ;
 	void DryRun() ;
 	void SaveState() ;
-	
+
 	struct Error : virtual Exception {} ;
-	
+
 private :
 	void SyncFolders( ) ;
 	void FromRemote( const Entry& entry ) ;
 	void FromChange( const Entry& entry ) ;
 	void UpdateChangeStamp( ) ;
-	
+
 private :
 	Syncer			*m_syncer ;
 	fs::path		m_root ;
