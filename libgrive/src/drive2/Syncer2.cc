@@ -79,7 +79,7 @@ bool Syncer2::Create( Resource *res )
 	assert( res->Parent()->IsFolder() ) ;
 	assert( res->Parent()->GetState() == Resource::sync ) ;
 	assert( res->ResourceID().empty() ) ;
-
+	
 	if ( !res->Parent()->IsEditable() )
 	{
 		Log( "Cannot upload %1%: parent directory read-only. %2%", res->Name(), res->StateStr(), log::warning ) ;

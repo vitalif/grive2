@@ -117,7 +117,7 @@ bool Entry::IsRemoved() const
 
 std::string Entry::Name() const
 {
-	return !m_filename.empty() ? m_filename : m_title;
+	return !m_filename.empty() ? m_filename : m_title ;
 }
 
 } // end of namespace gr

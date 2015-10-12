@@ -45,9 +45,9 @@ public :
 	void Update() ;
 	void DryRun() ;
 	void SaveState() ;
-
+	
 	struct Error : virtual Exception {} ;
-
+	
 private :
 	void SyncFolders( ) ;
 	void FromRemote( const Entry& entry ) ;
