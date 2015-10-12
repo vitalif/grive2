@@ -205,7 +205,7 @@ int Main( int argc, char **argv )
 	else if ( vm.count( "move" ) > 0 )
 	{
 		bool success = drive.Move( vm["move"].as<std::vector<std::string> >()[0],
-								   vm["move"].as<std::vector<std::string> >()[1] );
+		                           vm["move"].as<std::vector<std::string> >()[1] );
 		if (success)
 			Log( "Move successful!", log::info );
 		else
