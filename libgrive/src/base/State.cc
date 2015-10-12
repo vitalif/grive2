@@ -323,6 +323,13 @@ void State::ChangeStamp( long cstamp )
 
 bool State::Move( Syncer* syncer, fs::path old_p, fs::path new_p )
 {
+    if ( (fs::exists(new_p) && !fs::is_directory(new_p) ) || !fs::exists(old_p) )
+        return false;
+    if ( fs::is_directory(new_p) ){
+        if ( new_p.string().at( new_p.string().length() - 1 ) != '/')
+            new_p = new_p.string() + "/";
+        new_p = new_p.string() + old_p.filename().string();
+    }
     Resource* res = m_res.Root();
 		Resource* newParentRes = m_res.Root();
     for (fs::path::iterator it = old_p.begin(); it != old_p.end(); ++it)
@@ -334,6 +341,7 @@ bool State::Move( Syncer* syncer, fs::path old_p, fs::path new_p )
 		    if (*it != "." && *it != new_p.filename() )
             newParentRes = newParentRes->FindChild(it->string());
 		}
+
     fs::rename(old_p, new_p); //Moves local file
     syncer->Move(res, newParentRes, new_p.filename().string()); //Moves server file
     return true;
