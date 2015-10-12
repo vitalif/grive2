@@ -36,7 +36,7 @@ class ValVisitor ;
 class Val
 {
 public :
-	enum TypeEnum { null_type, bool_type, double_type, int_type, object_type, array_type, string_type, string_list_type } ;
+	enum TypeEnum { null_type, bool_type, double_type, int_type, object_type, array_type, string_type } ;
 
 	struct Error : virtual Exception {} ;
 	typedef boost::error_info<struct SrcType,	TypeEnum> SrcType_ ;
@@ -138,7 +138,6 @@ template <> struct Val::Type2Enum<double>		{ static const TypeEnum type = double
 template <> struct Val::Type2Enum<std::string>	{ static const TypeEnum type = string_type ; } ;
 template <> struct Val::Type2Enum<Val::Array>	{ static const TypeEnum type = array_type ; } ;
 template <> struct Val::Type2Enum<Val::Object>	{ static const TypeEnum type = object_type ; } ;
-template <> struct Val::Type2Enum<std::vector<std::string> >	{ static const TypeEnum type = string_list_type ; } ;
 
 template <> struct Val::SupportType<int>			{ typedef long long	Type ; } ;
 template <> struct Val::SupportType<unsigned>		{ typedef long long	Type ; } ;
@@ -155,7 +154,6 @@ template <> struct Val::SupportType<std::string>	{ typedef std::string	Type ; } 
 template <> struct Val::SupportType<const char*>	{ typedef std::string	Type ; } ;
 template <> struct Val::SupportType<Val::Array>		{ typedef Val::Array	Type ; } ;
 template <> struct Val::SupportType<Val::Object>	{ typedef Val::Object	Type ; } ;
-template <> struct Val::SupportType<std::vector<std::string> >	{ typedef std::vector<std::string>	Type ; } ;
 
 struct Val::Base
 {

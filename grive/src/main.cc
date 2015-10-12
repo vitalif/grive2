@@ -202,13 +202,15 @@ int Main( int argc, char **argv )
 		drive.Update() ;
 		drive.SaveState() ;
 	}
-  else if( vm.count( "move" ) > 0 ){
-    bool success = drive.Move();
-    if (success)
-      Log( "Move successful!", log::info );
-    else
-      Log( "Move failed.", log::error);
-  }
+    else if ( vm.count( "move" ) > 0 )
+    {
+        bool success = drive.Move( vm["move"].as<std::vector<std::string> >()[0],
+                                   vm["move"].as<std::vector<std::string> >()[1] );
+        if (success)
+            Log( "Move successful!", log::info );
+        else
+            Log( "Move failed.", log::error);
+    }
 	else
 		drive.DryRun() ;
 

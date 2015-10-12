@@ -49,9 +49,6 @@ Config::Config( const po::variables_map& vm )
 	m_cmd.Add( "ignore",	Val(vm.count("ignore") > 0
 		? vm["ignore"].as<std::string>()
 		: "" ) ) ;
-  m_cmd.Add( "move", Val(vm.count("move") > 0
-    ? vm["move"].as<std::vector<std::string> >()
-    : std::vector<std::string>() ) ) ;
 
 	m_path	= GetPath( fs::path(m_cmd["path"].Str()) ) ;
 	m_file	= Read( ) ;

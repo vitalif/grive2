@@ -48,7 +48,6 @@ Val::Val( TypeEnum type )
 		case string_type:	m_base.reset( new Impl<std::string> ) ;	break ;
 		case array_type:	m_base.reset( new Impl<Array> ) ; break ;
 		case object_type:	m_base.reset( new Impl<Object> ) ; break ;
-    case string_list_type: m_base.reset( new Impl<std::vector<std::string> > ); break ;
 		case null_type:
 		default:			m_base.reset( new Impl<void> ) ; break ;
 	}
