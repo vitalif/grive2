@@ -124,7 +124,7 @@ private :
 
 	template <typename T>
 	struct Impl ;
-
+	
 	std::auto_ptr<Base>	m_base ;
 
 private :

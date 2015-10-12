@@ -299,7 +299,7 @@ void State::Sync( Syncer *syncer, const Val& options )
 	// need to check if this introduces a new problem
 	DateTime last_change_time = m_last_change;
 	m_res.Root()->Sync( syncer, last_change_time, options ) ;
-
+	
 	if ( last_change_time == m_last_change )
 		Trace( "nothing changed at the server side since %1%", m_last_change ) ;
 	else
@@ -323,39 +323,39 @@ void State::ChangeStamp( long cstamp )
 
 bool State::Move( Syncer* syncer, fs::path old_p, fs::path new_p )
 {
-    if ( (fs::exists(new_p) && !fs::is_directory(new_p) ) || !fs::exists(old_p) )
-        return false;
+	if ( (fs::exists(new_p) && !fs::is_directory(new_p) ) || !fs::exists(old_p) )
+		return false;
 
-    //If path ends in a /, remove the /
-    if (new_p.string()[ new_p.string().size() - 1 ] == '/')
-        new_p = new_p.string().substr( 0, new_p.string().size() - 1 );
-    if (old_p.string()[ old_p.string().size() - 1 ] == '/')
-        old_p = old_p.string().substr( 0, old_p.string().size() - 1 );
+	//If path ends in a /, remove the /
+	if (new_p.string()[ new_p.string().size() - 1 ] == '/')
+		new_p = new_p.string().substr( 0, new_p.string().size() - 1 );
+	if (old_p.string()[ old_p.string().size() - 1 ] == '/')
+		old_p = old_p.string().substr( 0, old_p.string().size() - 1 );
 
-    //If new path is an existing directory, move the file into the directory
-    //instead of trying to rename it
-    if ( fs::is_directory(new_p) ){
-        new_p = new_p / old_p.filename();
-    }
-
-    Resource* res = m_res.Root();
-	Resource* newParentRes = m_res.Root();
-    for ( fs::path::iterator it = old_p.begin(); it != old_p.end(); ++it )
-    {
-        if ( *it != "." )
-            res = res->FindChild(it->string());
-    }
-	for ( fs::path::iterator it = new_p.begin(); it != new_p.end(); ++it )
-    {
-		if ( *it != "." && *it != new_p.filename() )
-            newParentRes = newParentRes->FindChild(it->string());
+	//If new path is an existing directory, move the file into the directory
+	//instead of trying to rename it
+	if ( fs::is_directory(new_p) ){
+		new_p = new_p / old_p.filename();
 	}
-    if ( res == 0 || newParentRes == 0 )
-        return false;
 
-    fs::rename(old_p, new_p); //Moves local file
-    syncer->Move(res, newParentRes, new_p.filename().string()); //Moves server file
-    return true;
+	Resource* res = m_res.Root();
+	Resource* newParentRes = m_res.Root();
+	for ( fs::path::iterator it = old_p.begin(); it != old_p.end(); ++it )
+	{
+		if ( *it != "." )
+			res = res->FindChild(it->string());
+	}
+	for ( fs::path::iterator it = new_p.begin(); it != new_p.end(); ++it )
+	{
+		if ( *it != "." && *it != new_p.filename() )
+			newParentRes = newParentRes->FindChild(it->string());
+	}
+	if ( res == 0 || newParentRes == 0 )
+		return false;
+
+	fs::rename(old_p, new_p); //Moves local file
+	syncer->Move(res, newParentRes, new_p.filename().string()); //Moves server file
+	return true;
 }
 
 } // end of namespace gr

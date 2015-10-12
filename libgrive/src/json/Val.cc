@@ -255,7 +255,7 @@ namespace std
 	{
 		v1.Swap( v2 ) ;
 	}
-
+	
 	ostream& operator<<( ostream& os, gr::Val::TypeEnum t )
 	{
 		return os << static_cast<int>(t) ;

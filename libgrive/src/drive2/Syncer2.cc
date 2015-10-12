@@ -85,17 +85,17 @@ bool Syncer2::Create( Resource *res )
 		Log( "Cannot upload %1%: parent directory read-only. %2%", res->Name(), res->StateStr(), log::warning ) ;
 		return false ;
 	}
-
+	
 	return Upload( res );
 }
 
 bool Syncer2::Move( Resource* res, Resource* newParentRes, std::string newFilename )
 {
-    if ( res->ResourceID().empty() )
-    {
-        Log("Can't rename file %1%, no server id found", res->Name());
-        return false;
-    }
+	if ( res->ResourceID().empty() )
+	{
+		Log("Can't rename file %1%, no server id found", res->Name());
+		return false;
+	}
 
 	Val meta;
 	meta.Add( "title", Val(newFilename) );
@@ -109,25 +109,25 @@ bool Syncer2::Move( Resource* res, Resource* newParentRes, std::string newFilena
 
 	// Issue metadata update request
 	{
-    std::string addRemoveParents("");
-    if (res->Parent()->IsRoot() )
-        addRemoveParents += "&removeParents=root";
-    else
-        addRemoveParents += "&removeParents=" + res->Parent()->ResourceID();
-    if ( newParentRes->IsRoot() )
-        addRemoveParents += "&addParents=root";
-    else
-        addRemoveParents += "&addParents=" + newParentRes->ResourceID();
+	std::string addRemoveParents("");
+	if (res->Parent()->IsRoot() )
+		addRemoveParents += "&removeParents=root";
+	else
+		addRemoveParents += "&removeParents=" + res->Parent()->ResourceID();
+	if ( newParentRes->IsRoot() )
+		addRemoveParents += "&addParents=root";
+	else
+		addRemoveParents += "&addParents=" + newParentRes->ResourceID();
 		http::Header hdr2 ;
 		hdr2.Add( "Content-Type: application/json" );
 		http::ValResponse vrsp ;
 		long http_code = 0;
-    //Don't change modified date because we're only moving
+	//Don't change modified date because we're only moving
 		http_code = m_http->Put( feeds::files + "/" + res->ResourceID() + "?modifiedDateBehavior=noChange" + addRemoveParents, json_meta, &vrsp, hdr2 ) ;
 		valr = vrsp.Response();
 		assert( !( valr["id"].Str().empty() ) );
 	}
-    return true;
+	return true;
 }
 
 std::string to_string( uint64_t n )

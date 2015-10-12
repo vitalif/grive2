@@ -53,7 +53,7 @@ private :
 	void FromRemote( const Entry& entry ) ;
 	void FromChange( const Entry& entry ) ;
 	void UpdateChangeStamp( ) ;
-
+	
 private :
 	Syncer			*m_syncer ;
 	fs::path		m_root ;

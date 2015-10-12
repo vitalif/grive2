@@ -121,7 +121,7 @@ int Main( int argc, char **argv )
 		( "dry-run",	"Only detect which files need to be uploaded/downloaded, "
 						"without actually performing them." )
 		( "ignore",		po::value<std::string>(), "Ignore files relative paths of which match this Perl RegExp." )
-    ( "move,m", po::value<std::vector<std::string> >()->multitoken(), "Moves or renames a file without reuploading or redownloading." )
+		( "move,m", po::value<std::vector<std::string> >()->multitoken(), "Moves or renames a file without reuploading or redownloading." )
 	;
 
 	po::variables_map vm;
@@ -202,15 +202,15 @@ int Main( int argc, char **argv )
 		drive.Update() ;
 		drive.SaveState() ;
 	}
-    else if ( vm.count( "move" ) > 0 )
-    {
-        bool success = drive.Move( vm["move"].as<std::vector<std::string> >()[0],
-                                   vm["move"].as<std::vector<std::string> >()[1] );
-        if (success)
-            Log( "Move successful!", log::info );
-        else
-            Log( "Move failed.", log::error);
-    }
+	else if ( vm.count( "move" ) > 0 )
+	{
+		bool success = drive.Move( vm["move"].as<std::vector<std::string> >()[0],
+								   vm["move"].as<std::vector<std::string> >()[1] );
+		if (success)
+			Log( "Move successful!", log::info );
+		else
+			Log( "Move failed.", log::error);
+	}
 	else
 		drive.DryRun() ;
 

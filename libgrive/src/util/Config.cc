@@ -93,7 +93,7 @@ Val Config::GetAll() const
 
 	for ( Val::Object::iterator i = cmd_obj.begin() ; i != cmd_obj.end() ; ++i )
 		obj[i->first] = i->second ;
-
+	
 	return Val( obj ) ;
 }
 

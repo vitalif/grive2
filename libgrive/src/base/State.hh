@@ -80,7 +80,7 @@ private :
 	int					m_cstamp ;
 	std::string			m_dir ;
 	boost::regex		m_ign ;
-
+	
 	std::vector<Entry>	m_unresolved ;
 } ;
 
