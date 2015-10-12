@@ -150,9 +150,13 @@ void Drive::DetectChanges()
 	}
 }
 
-bool Drive::Move(fs::path old_p, fs::path new_p)
+bool Drive::Move()
 {
-    return m_state.Move( m_syncer, old_p, new_p );
+  if (m_options["move"].As<std::vector<std::string> >().size() < 2){
+    Log("Not enough arguments for move!", log::info);
+    return false;
+  }
+    return m_state.Move( m_syncer, m_options["move"].As<std::vector<std::string> >()[0], m_options["move"].As<std::vector<std::string> >()[1] );
 }
 
 void Drive::Update()

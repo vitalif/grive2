@@ -41,7 +41,7 @@ public :
 	Drive( Syncer *syncer, const Val& options ) ;
 
 	void DetectChanges() ;
-	bool Move( fs::path old_p, fs::path new_p);
+	bool Move();
 	void Update() ;
 	void DryRun() ;
 	void SaveState() ;

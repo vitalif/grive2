@@ -36,14 +36,14 @@ class ValVisitor ;
 class Val
 {
 public :
-	enum TypeEnum { null_type, bool_type, double_type, int_type, object_type, array_type, string_type } ;
+	enum TypeEnum { null_type, bool_type, double_type, int_type, object_type, array_type, string_type, string_list_type } ;
 
 	struct Error : virtual Exception {} ;
 	typedef boost::error_info<struct SrcType,	TypeEnum> SrcType_ ;
 	typedef boost::error_info<struct DestType,	TypeEnum> DestType_ ;
 	typedef boost::error_info<struct NoKey,		std::string> NoKey_ ;
 	typedef boost::error_info<struct OutOfRange,std::size_t> OutOfRange_ ;
-	
+
 private :
 	template <typename T>
 	struct Type2Enum ;
@@ -71,10 +71,10 @@ public :
 
 	template <typename T>
 	Val& Assign( const T& t ) ;
-	
+
 	void Swap( Val& val ) ;
 	Val& operator=( const Val& val ) ;
-		
+
 	template <typename T>
 	Val& operator=( const T& t )
 	{
@@ -110,12 +110,12 @@ public :
 	bool Has( const std::string& key ) const ;
 	bool Get( const std::string& key, Val& val ) const ;
 	void Add( const std::string& key, const Val& val ) ;
-	
+
 	// shortcuts for array (and array of objects)
 	void Add( const Val& json ) ;
-	
+
 	std::vector<Val> Select( const std::string& key ) const ;
-	
+
 	friend std::ostream& operator<<( std::ostream& os, const Val& val ) ;
 	void Visit( ValVisitor *visitor ) const ;
 
@@ -124,7 +124,7 @@ private :
 
 	template <typename T>
 	struct Impl ;
-	
+
 	std::auto_ptr<Base>	m_base ;
 
 private :
@@ -138,6 +138,7 @@ template <> struct Val::Type2Enum<double>		{ static const TypeEnum type = double
 template <> struct Val::Type2Enum<std::string>	{ static const TypeEnum type = string_type ; } ;
 template <> struct Val::Type2Enum<Val::Array>	{ static const TypeEnum type = array_type ; } ;
 template <> struct Val::Type2Enum<Val::Object>	{ static const TypeEnum type = object_type ; } ;
+template <> struct Val::Type2Enum<std::vector<std::string> >	{ static const TypeEnum type = string_list_type ; } ;
 
 template <> struct Val::SupportType<int>			{ typedef long long	Type ; } ;
 template <> struct Val::SupportType<unsigned>		{ typedef long long	Type ; } ;
@@ -154,6 +155,7 @@ template <> struct Val::SupportType<std::string>	{ typedef std::string	Type ; } 
 template <> struct Val::SupportType<const char*>	{ typedef std::string	Type ; } ;
 template <> struct Val::SupportType<Val::Array>		{ typedef Val::Array	Type ; } ;
 template <> struct Val::SupportType<Val::Object>	{ typedef Val::Object	Type ; } ;
+template <> struct Val::SupportType<std::vector<std::string> >	{ typedef std::vector<std::string>	Type ; } ;
 
 struct Val::Base
 {

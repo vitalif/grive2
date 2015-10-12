@@ -78,19 +78,19 @@ void InitLog( const po::variables_map& vm )
 		file_log->Enable( log::warning ) ;
 		file_log->Enable( log::error ) ;
 		file_log->Enable( log::critical ) ;
-		
+
 		// log grive version to log file
 		file_log->Log( log::Fmt("grive version " VERSION " " __DATE__ " " __TIME__), log::verbose ) ;
 		file_log->Log( log::Fmt("current time: %1%") % DateTime::Now(), log::verbose ) ;
-		
+
 		comp_log->Add( file_log ) ;
 	}
-	
+
 	if ( vm.count( "verbose" ) )
 	{
 		console_log->Enable( log::verbose ) ;
 	}
-	
+
 	if ( vm.count( "debug" ) )
 	{
 		console_log->Enable( log::verbose ) ;
@@ -102,7 +102,7 @@ void InitLog( const po::variables_map& vm )
 int Main( int argc, char **argv )
 {
 	InitGCrypt() ;
-	
+
 	// construct the program options
 	po::options_description desc( "Grive options" );
 	desc.add_options()
@@ -121,12 +121,13 @@ int Main( int argc, char **argv )
 		( "dry-run",	"Only detect which files need to be uploaded/downloaded, "
 						"without actually performing them." )
 		( "ignore",		po::value<std::string>(), "Ignore files relative paths of which match this Perl RegExp." )
+    ( "move,m", po::value<std::vector<std::string> >()->multitoken(), "Moves or renames a file without reuploading or redownloading." )
 	;
-	
+
 	po::variables_map vm;
 	po::store(po::parse_command_line( argc, argv, desc), vm );
 	po::notify(vm);
-	
+
 	// simple commands that doesn't require log or config
 	if ( vm.count("help") )
 	{
@@ -142,9 +143,9 @@ int Main( int argc, char **argv )
 
 	// initialize logging
 	InitLog(vm) ;
-	
+
 	Config config(vm) ;
-	
+
 	Log( "config file name %1%", config.Filename(), log::verbose );
 
 	std::auto_ptr<http::Agent> http( new http::CurlAgent );
@@ -154,26 +155,26 @@ int Main( int argc, char **argv )
 	if ( vm.count( "auth" ) )
 	{
 		OAuth2 token( http.get(), client_id, client_secret ) ;
-		
+
 		std::cout
 			<< "-----------------------\n"
 			<< "Please go to this URL and get an authentication code:\n\n"
 			<< token.MakeAuthURL()
 			<< std::endl ;
-		
+
 		std::cout
 			<< "\n-----------------------\n"
 			<< "Please input the authentication code here: " << std::endl ;
 		std::string code ;
 		std::cin >> code ;
-		
+
 		token.Auth( code ) ;
-		
+
 		// save to config
 		config.Set( "refresh_token", Val( token.RefreshToken() ) ) ;
 		config.Save() ;
 	}
-	
+
 	std::string refresh_token ;
 	try
 	{
@@ -185,10 +186,10 @@ int Main( int argc, char **argv )
 			"Please run grive with the \"-a\" option if this is the "
 			"first time you're accessing your Google Drive!",
 			log::critical ) ;
-		
+
 		return -1;
 	}
-	
+
 	OAuth2 token( http.get(), refresh_token, client_id, client_secret ) ;
 	AuthAgent agent( token, http.get() ) ;
 	v2::Syncer2 syncer( &agent );
@@ -196,15 +197,20 @@ int Main( int argc, char **argv )
 	Drive drive( &syncer, config.GetAll() ) ;
 	drive.DetectChanges() ;
 
-	if ( vm.count( "dry-run" ) == 0 )
+	if ( vm.count( "dry-run" ) == 0 && vm.count( "move" ) == 0 )
 	{
-        //drive.Rename("./hello.txt", "./hello_changed.txt");
 		drive.Update() ;
 		drive.SaveState() ;
 	}
+  else if( vm.count( "move" ) > 0 ){
+    bool success = drive.Move();
+    if (!success){
+      Log( "Move failed.", log::critical );
+    }
+  }
 	else
 		drive.DryRun() ;
-	
+
 	config.Save() ;
 	Log( "Finished!", log::info ) ;
 	return 0 ;
