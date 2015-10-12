@@ -204,9 +204,10 @@ int Main( int argc, char **argv )
 	}
   else if( vm.count( "move" ) > 0 ){
     bool success = drive.Move();
-    if (!success){
-      Log( "Move failed.", log::critical );
-    }
+    if (success)
+      Log( "Move successful!", log::info );
+    else
+      Log( "Move failed.", log::error);
   }
 	else
 		drive.DryRun() ;
