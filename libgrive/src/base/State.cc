@@ -353,6 +353,8 @@ bool State::Move( Syncer* syncer, fs::path old_p, fs::path new_p, fs::path grive
 	int start = grive_root.string().size() + 1;
 	int nLen = new_p.string().size() - (grive_root.string().size() + 1);
 	int oLen = old_p.string().size() - (grive_root.string().size() + 1);
+	if ( start + nLen != new_p.string().size() || start + oLen != old_p.string().size() )
+		return false;
 	fs::path new_p_rootrel( new_p.string().substr( start, nLen ) );
 	fs::path old_p_rootrel( old_p.string().substr( start, oLen ) );
 	
@@ -361,14 +363,14 @@ bool State::Move( Syncer* syncer, fs::path old_p, fs::path new_p, fs::path grive
 	Resource* newParentRes = m_res.Root();
 	for ( fs::path::iterator it = old_p_rootrel.begin(); it != old_p_rootrel.end(); ++it )
 	{
-		if ( *it != "." && *it != "..")
+		if ( *it != "." && *it != ".." && res != 0 )
 			res = res->FindChild(it->string());
 		if ( *it == ".." )
 			res = res->Parent();
 	}
 	for ( fs::path::iterator it = new_p_rootrel.begin(); it != new_p_rootrel.end(); ++it )
 	{
-		if ( *it != "." && *it != ".." && *it != new_p.filename() )
+		if ( *it != "." && *it != ".." && *it != new_p.filename() && newParentRes != 0 )
 			newParentRes = newParentRes->FindChild(it->string());
 		if ( *it == "..")
 			res = res->Parent();
