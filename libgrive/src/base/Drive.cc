@@ -152,8 +152,7 @@ void Drive::DetectChanges()
 
 bool Drive::Move( fs::path old_p, fs::path new_p )
 {
-	fs::path grive_root( m_options["path"] );
-	return m_state.Move( m_syncer, old_p, new_p, grive_root );
+	return m_state.Move( m_syncer, old_p, new_p, m_options["path"].Str() );
 }
 
 void Drive::Update()

@@ -356,6 +356,7 @@ bool State::Move( Syncer* syncer, fs::path old_p, fs::path new_p, fs::path grive
 	fs::path new_p_rootrel( new_p.string().substr( start, nLen ) );
 	fs::path old_p_rootrel( old_p.string().substr( start, oLen ) );
 	
+	//Get resources
 	Resource* res = m_res.Root();
 	Resource* newParentRes = m_res.Root();
 	for ( fs::path::iterator it = old_p_rootrel.begin(); it != old_p_rootrel.end(); ++it )
@@ -372,7 +373,11 @@ bool State::Move( Syncer* syncer, fs::path old_p, fs::path new_p, fs::path grive
 		if ( *it == "..")
 			res = res->Parent();
 	}
-	if ( res == 0 || newParentRes == 0 )
+	
+	//These conditions should only occur if everything is not up-to-date
+	if ( res == 0 || newParentRes == 0 || res->GetState() != Resource::sync ||
+	     newParentRes->GetState() != Resource::sync || 
+	     newParentRes->FindChild( new_p.filename().string() ) != 0 )
 		return false;
 
 	fs::rename(old_p, new_p); //Moves local file
