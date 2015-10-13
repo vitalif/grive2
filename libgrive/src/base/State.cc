@@ -321,34 +321,56 @@ void State::ChangeStamp( long cstamp )
 	m_cstamp = cstamp ;
 }
 
-bool State::Move( Syncer* syncer, fs::path old_p, fs::path new_p )
+bool State::Move( Syncer* syncer, fs::path old_p, fs::path new_p, fs::path grive_root )
 {
+	//If paths are relative, convert to absolute
+	if( old_p.is_relative() )
+		old_p = fs::current_path() / old_p;
+	if ( new_p.is_relative() )
+		new_p = fs::current_path() / new_p;
+	if ( grive_root.is_relative() )
+		grive_root = fs::current_path() / grive_root;
+	
 	if ( (fs::exists(new_p) && !fs::is_directory(new_p) ) || !fs::exists(old_p) )
 		return false;
 
 	//If path ends in a /, remove the /
-	if (new_p.string()[ new_p.string().size() - 1 ] == '/')
+	if ( new_p.string()[ new_p.string().size() - 1 ] == '/' )
 		new_p = new_p.string().substr( 0, new_p.string().size() - 1 );
-	if (old_p.string()[ old_p.string().size() - 1 ] == '/')
+	if ( old_p.string()[ old_p.string().size() - 1 ] == '/' )
 		old_p = old_p.string().substr( 0, old_p.string().size() - 1 );
-
+	if ( grive_root.string()[ grive_root.string().size() - 1 ] == '/' )
+		grive_root = grive_root.string().substr( 0, grive_root.string().size() - 1 );
+	
 	//If new path is an existing directory, move the file into the directory
 	//instead of trying to rename it
 	if ( fs::is_directory(new_p) ){
 		new_p = new_p / old_p.filename();
 	}
-
+	
+	//Get the paths relative to grive root.
+	//+1s are to exclude slash at beginning of relative path
+	int start = grive_root.string().size() + 1;
+	int nLen = new_p.string().size() - (grive_root.string().size() + 1);
+	int oLen = old_p.string().size() - (grive_root.string().size() + 1);
+	fs::path new_p_rootrel( new_p.string().substr( start, nLen ) );
+	fs::path old_p_rootrel( old_p.string().substr( start, oLen ) );
+	
 	Resource* res = m_res.Root();
 	Resource* newParentRes = m_res.Root();
-	for ( fs::path::iterator it = old_p.begin(); it != old_p.end(); ++it )
+	for ( fs::path::iterator it = old_p_rootrel.begin(); it != old_p_rootrel.end(); ++it )
 	{
-		if ( *it != "." )
+		if ( *it != "." && *it != "..")
 			res = res->FindChild(it->string());
+		if ( *it == ".." )
+			res = res->Parent();
 	}
-	for ( fs::path::iterator it = new_p.begin(); it != new_p.end(); ++it )
+	for ( fs::path::iterator it = new_p_rootrel.begin(); it != new_p_rootrel.end(); ++it )
 	{
-		if ( *it != "." && *it != new_p.filename() )
+		if ( *it != "." && *it != ".." && *it != new_p.filename() )
 			newParentRes = newParentRes->FindChild(it->string());
+		if ( *it == "..")
+			res = res->Parent();
 	}
 	if ( res == 0 || newParentRes == 0 )
 		return false;

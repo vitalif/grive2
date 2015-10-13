@@ -63,7 +63,7 @@ public :
 	
 	long ChangeStamp() const ;
 	void ChangeStamp( long cstamp ) ;
-	bool Move( Syncer* syncer, fs::path old_p, fs::path new_p );
+	bool Move( Syncer* syncer, fs::path old_p, fs::path new_p, fs::path grive_root );
 
 private :
 	void FromLocal( const fs::path& p, Resource *folder ) ;
