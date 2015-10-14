@@ -330,8 +330,8 @@ bool State::Move( Syncer* syncer, fs::path old_p, fs::path new_p, fs::path grive
 	grive_root = fs::canonical( grive_root );
 	
 	//Fails if source file doesn't exist, or if destination file already
-	//exists and is not a directory.
-	if ( (fs::exists(new_p) && !fs::is_directory(new_p) ) || !fs::exists(old_p) )
+	//exists and is not a directory, or if the source and destination are exactly the same
+	if ( (fs::exists(new_p) && !fs::is_directory(new_p) ) || !fs::exists(old_p) || fs::equivalent( old_p, new_p ) )
 		return false;
 	
 	//If new path is an existing directory, move the file into the directory
