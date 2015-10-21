@@ -326,8 +326,12 @@ bool State::Move( Syncer* syncer, fs::path old_p, fs::path new_p, fs::path grive
 	//Convert paths to canonical representations
 	//Also seems to remove trailing / at the end of directory paths
 	old_p = fs::canonical( old_p );
-	new_p = fs::canonical( new_p );
 	grive_root = fs::canonical( grive_root );
+	
+	//new_p is a little special because fs::canonical() requires that the path exists
+	if ( new_p.string()[ new_p.string().size() - 1 ] == '/') //If new_p ends with a /, remove it
+		new_p = new_p.parent_path();
+	new_p = fs::canonical( new_p.parent_path() ) / new_p.filename();
 	
 	//Fails if source file doesn't exist, or if destination file already
 	//exists and is not a directory, or if the source and destination are exactly the same
