@@ -28,7 +28,8 @@ You need the following libraries:
 - libcurl
 - libstdc++
 - libgcrypt
-- Boost (Boost filesystem, program_options, regex, unit_test_framework and system are required)
+- Boost (Boost filesystem, program_options, regex, unit_test_framework and system are required.
+  libboost-all-dev should contain all of them)
 - expat
 
 There are also some optional dependencies:
