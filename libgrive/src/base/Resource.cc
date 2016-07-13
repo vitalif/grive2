@@ -151,8 +151,16 @@ void Resource::FromRemoteFile( const Entry& remote )
 	
 	fs::path path = Path() ;
 
+	// remote download URL unknown, skip file
+	if ( remote.ContentSrc().empty() )
+	{
+		Log( "file %1% has unknown download URL. assumed in sync",
+			Path(), log::verbose ) ;
+		m_state = sync ;
+	}
+
 	// recursively create/delete folder
-	if ( m_parent->m_state == remote_new || m_parent->m_state == remote_deleted ||
+	else if ( m_parent->m_state == remote_new || m_parent->m_state == remote_deleted ||
 		 m_parent->m_state == local_new  || m_parent->m_state == local_deleted )
 	{
 		Log( "file %1% parent %2% recursively in %3% (%4%)", path,
@@ -183,14 +191,6 @@ void Resource::FromRemoteFile( const Entry& remote )
 			Log( "file %1% is deleted in local", path, log::verbose ) ;
 			m_state = local_deleted ;
 		}
-	}
-
-	// remote download URL unknown, skip file
-	else if ( remote.ContentSrc().empty() )
-	{
-		Log( "file %1% has unknown download URL. assumed in sync",
-			Path(), log::verbose ) ;
-		m_state = sync ;
 	}
 
 	// if checksum is equal, no need to compare the mtime
