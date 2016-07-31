@@ -115,9 +115,20 @@ void State::FromLocal( const fs::path& p, Resource* folder, Val& tree )
 			Val& rec = tree.Item( fname );
 			if ( m_force )
 				rec.Del( "srv_time" );
-			c->FromLocal( rec ) ;
-			if ( c->IsFolder() )
-				FromLocal( *i, c, rec.Item( "tree" ) ) ;
+
+			try
+			{
+				// Get the filename
+				c->FromLocal( rec ) ;
+				if ( c->IsFolder() )
+					FromLocal( *i, c, rec.Item( "tree" ) ) ;
+			}
+			catch (std::exception &e)
+			{
+				// If we couldn't get a valid filename (eg: for a symlink), skip the file.
+				Log("Warning: File '%1%' is invalid or is a symlink, so will skip it.", path);
+				//Log(e.what());
+			}
 		}
 	}
 

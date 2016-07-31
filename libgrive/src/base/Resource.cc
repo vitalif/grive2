@@ -246,7 +246,15 @@ void Resource::FromLocal( Val& state )
 	{
 		fs::path path = Path() ;
 		bool is_dir;
+
+		// If the file is a symlink or invalid filename, os::Stat will throw an exception,
+		// and m_state might become "unknown". So we will force m_state to be "sync" to ignore
+		// this file just before running os::Stat, and if os::Stat succeeds then we set m_state
+		// back to its original value.
+		State prevState = m_state;
+		m_state = sync; // Ignore this file
 		os::Stat( path, &m_ctime, NULL, &is_dir ) ;
+		m_state = prevState;    // Set it back to the actual state value, if it got a valid file.
 
 		m_name = path.filename().string() ;
 		m_kind = is_dir ? "folder" : "file";
