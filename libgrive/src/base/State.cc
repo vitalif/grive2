@@ -81,6 +81,10 @@ void State::FromLocal( const fs::path& p )
 	FromLocal( p, m_res.Root(), m_st.Item( "tree" ) ) ;
 }
 
+size_t State::getTotalChanges() {
+	return m_res.Root()->size();
+}
+
 bool State::IsIgnore( const std::string& filename )
 {
 	return regex_search( filename.c_str(), m_ign_re );
@@ -204,6 +208,7 @@ void State::FromChange( const Entry& e )
 	if ( Resource *res = m_res.FindByHref( e.SelfHref() ) )
 		m_res.Update( res, e ) ;
 }
+
 
 bool State::Update( const Entry& e )
 {

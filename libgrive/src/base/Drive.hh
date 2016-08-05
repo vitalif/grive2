@@ -47,6 +47,8 @@ public :
 	
 	struct Error : virtual Exception {} ;
 	
+	size_t getTotalChanges();
+
 private :
 	void ReadChanges() ;
 	void FromRemote( const Entry& entry ) ;
