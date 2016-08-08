@@ -59,7 +59,8 @@ public :
 	virtual long Get(
 		const std::string& 	url,
 		DataStream			*dest,
-		const Header&		hdr ) ;
+		const Header&		hdr,
+		const long			downloadFileBytes = 0) ;
 	
 	virtual long Post(
 		const std::string& 	url,
@@ -72,7 +73,8 @@ public :
 		const std::string&	url,
 		SeekStream			*in,
 		DataStream			*dest,
-		const Header&		hdr ) = 0 ;
+		const Header&		hdr,
+		const long			downloadFileBytes = 0) = 0 ;
 	
 	virtual void SetUploadSpeed( unsigned kbytes ) ;
 	virtual void SetDownloadSpeed( unsigned kbytes ) ;

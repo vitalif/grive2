@@ -97,6 +97,7 @@ public :
 	std::string ETag() const ;
 	std::string ResourceID() const ;
 	State GetState() const;
+	long DownloadFileBytes() const;
 	
 	const Resource* Parent() const ;
 	Resource* Parent() ;
@@ -163,6 +164,7 @@ private :
 	State					m_state ;
 	Val*					m_json ;
 	bool					m_local_exists ;
+	long					m_downloadFileBytes;
 } ;
 
 } // end of namespace gr::v1

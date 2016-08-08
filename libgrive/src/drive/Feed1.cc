@@ -45,7 +45,7 @@ bool Feed1::GetNext( http::Agent *http )
 	if ( m_next.empty() )
 		return false;
 	
-	http->Get( m_next, &xrsp, http::Header() ) ;
+	http->Get( m_next, &xrsp, http::Header(), 0 ) ;
 	
 	xml::Node m_root = xrsp.Response() ;
 	xml::NodeSet xe = m_root["entry"] ;

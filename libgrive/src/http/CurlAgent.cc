@@ -27,9 +27,8 @@
 #include "util/File.hh"
 
 #include <boost/throw_exception.hpp>
-
-// dependent libraries
-#include <curl/curl.h>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -39,6 +38,7 @@
 #include <iostream>
 
 #include <signal.h>
+#include <math.h>
 
 namespace {
 
@@ -140,8 +140,15 @@ std::size_t CurlAgent::HeaderCallback( void *ptr, size_t size, size_t nmemb, Cur
 std::size_t CurlAgent::Receive( void* ptr, size_t size, size_t nmemb, CurlAgent *pthis )
 {
 	assert( pthis != 0 ) ;
+
 	if ( pthis->m_log.get() )
 		pthis->m_log->Write( (const char*)ptr, size*nmemb );
+
+	if (pthis->totalDownlaodSize > 0) {
+		pthis->downloadedBytes += (curl_off_t)size*nmemb;
+		CurlAgent::progress_callback(pthis, pthis->totalDownlaodSize, pthis->downloadedBytes, 0L, 0L);
+	}
+
 	if ( pthis->m_pimpl->error && pthis->m_pimpl->error_data.size() < 65536 )
 	{
 		// Do not feed error responses to destination stream
@@ -150,6 +157,87 @@ std::size_t CurlAgent::Receive( void* ptr, size_t size, size_t nmemb, CurlAgent 
 	}
 	return pthis->m_pimpl->dest->Write( static_cast<char*>(ptr), size * nmemb ) ;
 }
+
+
+std::string CurlAgent::CalculateByteSize(curl_off_t bytes, bool withSuffix) {
+	long double KB = bytes / 1024;
+	long double MB = KB / 1024;
+	long double GB = MB / 1024;
+	std::string res;
+	std::string suffix;
+
+	std::ostringstream ss;
+	ss << std::fixed << std::setprecision(2);
+
+	if (GB > 1) {
+		ss << GB;
+		suffix = "GB";
+	}
+	else if (MB > 1) {
+		ss << MB;
+		suffix = "MB";
+	} else {
+		ss << KB;
+		suffix = "KB";
+	}
+
+	res = ss.str() + (withSuffix ? suffix : "");
+
+	return res;
+}
+
+
+int CurlAgent::progress_callback(void *ptr,   curl_off_t TotalDownloadSize,   curl_off_t finishedDownloadSize,   curl_off_t TotalToUpload,   curl_off_t NowUploaded) {
+	curl_off_t processed = (TotalDownloadSize > TotalToUpload) ? finishedDownloadSize : NowUploaded;
+	curl_off_t total = (TotalDownloadSize > TotalToUpload) ? TotalDownloadSize : TotalToUpload;
+
+	if (total <= 0.0)
+        return 0;
+
+	//libcurl seems to process more bytes then the actual file size :)
+	if (processed > total)
+		processed = total;
+
+    int totaldotz = 100;
+    double fraction = (float)processed / total;
+
+    if ((fraction*100) < 100.0)
+    	((CurlAgent*)ptr)->hundredpercentDone = false;
+
+    if (!((CurlAgent*)ptr)->hundredpercentDone) {
+    	printf("\33[2K\r");	//delete previous output line
+    	int dotz = round(fraction * totaldotz);
+
+		int count=0;
+		printf("  [%3.0f%%] [", fraction*100);
+
+		for (; count < dotz-1; count++) {
+			printf("=");
+		}
+
+		printf(">");
+
+		for (; count < totaldotz-1; count++) {
+			printf(" ");
+		}
+
+		printf("] ");
+
+		printf("%s/%s", CalculateByteSize(processed, false).c_str(), CalculateByteSize(total, true).c_str());
+
+		printf("\r");
+
+		if ((fraction*100) >= 100.0) {
+			((CurlAgent*)ptr)->hundredpercentDone = true;
+			printf("\n");
+		}
+
+		fflush(stdout);
+    }
+
+    return 0;
+}
+
 
 long CurlAgent::ExecCurl(
 	const std::string&	url,
@@ -167,6 +255,13 @@ long CurlAgent::ExecCurl(
 	m_pimpl->dest = dest ;
 
 	struct curl_slist *slist = SetHeader( m_pimpl->curl, hdr ) ;
+
+	if (progressBar) {
+		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+		curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, progress_callback);
+		curl_easy_setopt(curl, CURLOPT_XFERINFODATA, this);
+	}
+
 
 	CURLcode curl_code = ::curl_easy_perform(curl);
 
@@ -202,12 +297,16 @@ long CurlAgent::Request(
 	const std::string&	url,
 	SeekStream			*in,
 	DataStream			*dest,
-	const Header&		hdr )
+	const Header&		hdr,
+	const long			downloadFileBytes)
 {
+
 	Trace("HTTP %1% \"%2%\"", method, url ) ;
 
 	Init() ;
 	CURL *curl = m_pimpl->curl ;
+	progressBar = false;
+	totalDownlaodSize = 0;
 
 	// set common options
 	::curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method.c_str() );
@@ -217,6 +316,17 @@ long CurlAgent::Request(
 		::curl_easy_setopt(curl, CURLOPT_READFUNCTION,		&ReadFileCallback ) ;
 		::curl_easy_setopt(curl, CURLOPT_READDATA ,			in ) ;
 		::curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, 	static_cast<curl_off_t>( in->Size() ) ) ;
+
+		if (url.compare("https://accounts.google.com/o/oauth2/token"))
+			progressBar = true;
+		else
+			progressBar = false;
+	} else {
+		if (!boost::starts_with(url, "https://www.googleapis.com/")) {
+			progressBar = true;
+			totalDownlaodSize = downloadFileBytes;
+		} else
+			progressBar = false;
 	}
 
 	return ExecCurl( url, dest, hdr ) ;

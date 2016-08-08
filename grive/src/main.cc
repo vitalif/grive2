@@ -45,6 +45,7 @@
 #include <iostream>
 #include <unistd.h>
 
+
 const std::string client_id		= "22314510474.apps.googleusercontent.com" ;
 const std::string client_secret	= "bl4ufi89h-9MkFlypcI7R785" ;
 
@@ -205,6 +206,8 @@ int Main( int argc, char **argv )
 
 	Drive drive( &syncer, config.GetAll() ) ;
 	drive.DetectChanges() ;
+
+	Log( "%1% total changes", drive.getTotalChanges(), log::info ) ;
 
 	if ( vm.count( "dry-run" ) == 0 )
 	{

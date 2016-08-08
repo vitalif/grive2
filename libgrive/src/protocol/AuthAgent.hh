@@ -44,7 +44,8 @@ public :
 		const std::string&	url,
 		SeekStream			*in,
 		DataStream			*dest,
-		const http::Header&	hdr ) ;
+		const http::Header&	hdr,
+		const long			downloadFileBytes = 0) ;
 	
 	std::string LastError() const ;
 	std::string LastErrorHeaders() const ;

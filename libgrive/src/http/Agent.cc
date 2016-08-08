@@ -20,6 +20,7 @@
 #include "Agent.hh"
 #include "Header.hh"
 #include "util/StringStream.hh"
+#include <iostream>
 
 namespace gr {
 
@@ -37,7 +38,7 @@ long Agent::Put(
 	const Header&		hdr )
 {
 	StringStream s( data );
-	return Request( "PUT", url, &s, dest, hdr );
+	return Request( "PUT", url, &s, dest, hdr);
 }
 
 long Agent::Put(
@@ -46,15 +47,16 @@ long Agent::Put(
 	DataStream			*dest,
 	const Header&		hdr )
 {
-	return Request( "PUT", url, (SeekStream*)file, dest, hdr );
+	return Request( "PUT", url, (SeekStream*)file, dest, hdr);
 }
 
 long Agent::Get(
 	const std::string& 	url,
 	DataStream			*dest,
-	const Header&		hdr )
+	const Header&		hdr,
+	const long			downloadFileBytes)
 {
-	return Request( "GET", url, NULL, dest, hdr );
+	return Request( "GET", url, NULL, dest, hdr, downloadFileBytes);
 }
 
 long Agent::Post(
@@ -66,7 +68,7 @@ long Agent::Post(
 	Header h( hdr ) ;
 	StringStream s( data );
 	h.Add( "Content-Type: application/x-www-form-urlencoded" );
-	return Request( "POST", url, &s, dest, h );
+	return Request( "POST", url, &s, dest, h);
 }
 
 void Agent::SetUploadSpeed( unsigned kbytes )

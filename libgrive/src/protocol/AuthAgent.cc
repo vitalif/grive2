@@ -71,7 +71,8 @@ long AuthAgent::Request(
 	const std::string&	url,
 	SeekStream			*in,
 	DataStream			*dest,
-	const http::Header&	hdr )
+	const http::Header&	hdr,
+	const long			downloadFileBytes)
 {
 	long response;
 	Header auth;
@@ -80,7 +81,7 @@ long AuthAgent::Request(
 		auth = AppendHeader( hdr );
 		if ( in )
 			in->Seek( 0, 0 );
-		response = m_agent->Request( method, url, in, dest, auth );
+		response = m_agent->Request( method, url, in, dest, auth, downloadFileBytes );
 	} while ( CheckRetry( response ) );
 	return CheckHttpResponse( response, url, auth );
 }

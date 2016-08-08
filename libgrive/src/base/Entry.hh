@@ -61,6 +61,8 @@ public :
 	
 	const std::vector<std::string>& ParentHrefs() const ;
 	
+	long DownloadFileBytes() const;
+
 protected :
 	std::string		m_title ;
 	std::string		m_filename ;
@@ -80,6 +82,7 @@ protected :
 
 	DateTime		m_mtime ;
 	bool			m_is_removed ;
+	long			m_downloadFileBytes;
 } ;
 
 } // end of namespace gr
