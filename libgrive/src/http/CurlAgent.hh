@@ -68,6 +68,7 @@ public :
 
 	static int progress_callback(void *ptr,   curl_off_t TotalDownloadSize,   curl_off_t finishedDownloadSize,   curl_off_t TotalToUpload,   curl_off_t NowUploaded);
 	static std::string CalculateByteSize(curl_off_t bytes, bool withSuffix);
+	static unsigned short int DetermineTerminalSize() ;
 
 private :
 	static std::size_t HeaderCallback( void *ptr, size_t size, size_t nmemb, CurlAgent *pthis ) ;

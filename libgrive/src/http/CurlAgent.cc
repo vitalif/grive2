@@ -39,6 +39,8 @@
 
 #include <signal.h>
 #include <math.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 namespace {
 
@@ -159,6 +161,13 @@ std::size_t CurlAgent::Receive( void* ptr, size_t size, size_t nmemb, CurlAgent 
 }
 
 
+unsigned short int CurlAgent::DetermineTerminalSize() {
+	struct winsize w;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+
+	return w.ws_col;
+}
+
 std::string CurlAgent::CalculateByteSize(curl_off_t bytes, bool withSuffix) {
 	long double KB = bytes / 1024;
 	long double MB = KB / 1024;
@@ -198,7 +207,18 @@ int CurlAgent::progress_callback(void *ptr,   curl_off_t TotalDownloadSize,   cu
 	if (processed > total)
 		processed = total;
 
-    int totaldotz = 100;
+
+	int availableSize = CurlAgent::DetermineTerminalSize() - 30;	//10 for prefix of percent and 20 for suffix of file size
+
+	int totalDots;
+
+	if (availableSize > 100)
+		totalDots = 100;
+	else if (availableSize < 0)
+		totalDots = 10;
+	else
+		totalDots = availableSize;
+
     double fraction = (float)processed / total;
 
     if ((fraction*100) < 100.0)
@@ -206,7 +226,7 @@ int CurlAgent::progress_callback(void *ptr,   curl_off_t TotalDownloadSize,   cu
 
     if (!((CurlAgent*)ptr)->hundredpercentDone) {
     	printf("\33[2K\r");	//delete previous output line
-    	int dotz = round(fraction * totaldotz);
+    	int dotz = round(fraction * totalDots);
 
 		int count=0;
 		printf("  [%3.0f%%] [", fraction*100);
@@ -217,7 +237,7 @@ int CurlAgent::progress_callback(void *ptr,   curl_off_t TotalDownloadSize,   cu
 
 		printf(">");
 
-		for (; count < totaldotz-1; count++) {
+		for (; count < totalDots-1; count++) {
 			printf(" ");
 		}
 
@@ -261,7 +281,6 @@ long CurlAgent::ExecCurl(
 		curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, progress_callback);
 		curl_easy_setopt(curl, CURLOPT_XFERINFODATA, this);
 	}
-
 
 	CURLcode curl_code = ::curl_easy_perform(curl);
 
