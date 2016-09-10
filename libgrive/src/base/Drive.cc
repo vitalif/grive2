@@ -92,6 +92,11 @@ void Drive::DetectChanges()
 	m_state.ResolveEntry() ;
 }
 
+
+size_t Drive::getTotalChanges() {
+	return m_state.getTotalChanges();
+}
+
 // pull the changes feed
 // FIXME: unused until Grive will use the feed-based sync instead of reading full tree
 void Drive::ReadChanges()
@@ -115,8 +120,6 @@ void Drive::Update()
 {
 	Log( "Synchronizing files", log::info ) ;
 	m_state.Sync( m_syncer, m_options ) ;
-	
-	UpdateChangeStamp( ) ;
 }
 
 void Drive::DryRun()

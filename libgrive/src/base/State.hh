@@ -63,6 +63,8 @@ public :
 	long ChangeStamp() const ;
 	void ChangeStamp( long cstamp ) ;
 
+	size_t getTotalChanges();
+
 private :
 	void FromLocal( const fs::path& p, Resource *folder, Val& tree ) ;
 	void FromChange( const Entry& e ) ;

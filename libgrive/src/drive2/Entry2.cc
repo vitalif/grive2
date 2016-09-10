@@ -64,6 +64,15 @@ void Entry2::Update( const Val& item )
 		m_is_dir		= file["mimeType"].Str() == mime_types::folder ;
 		m_is_editable	= file["editable"].Bool() ;
 		m_is_removed	= file["labels"]["trashed"].Bool() ;
+
+		if (file.Has("fileSize"))
+		{
+			m_size	= file["fileSize"].U64() ;
+		} else
+		{
+			m_size 	= 0;
+		}
+
 		if ( !m_is_dir )
 		{
 			if ( !file.Has( "md5Checksum" ) || !file.Has("downloadUrl") )

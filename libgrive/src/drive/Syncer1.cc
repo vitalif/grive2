@@ -72,10 +72,10 @@ void Syncer1::DeleteRemote( Resource *res )
 		
 		// don't know why, but an update before deleting seems to work always
 		http::XmlResponse xml ;
-		m_http->Get( res->SelfHref(), &xml, hdr ) ;
+		m_http->Get( res->SelfHref(), &xml, hdr, res->DownloadFileBytes() ) ;
 		AssignIDs( res, Entry1( xml.Response() ) ) ;
 		
-		m_http->Request( "DELETE", res->SelfHref(), NULL, &str, hdr ) ;
+		m_http->Request( "DELETE", res->SelfHref(), NULL, &str, hdr, 0 ) ;
 	}
 	catch ( Exception& e )
 	{
@@ -263,7 +263,7 @@ std::unique_ptr<Feed> Syncer1::GetChanges( long min_cstamp )
 long Syncer1::GetChangeStamp( long min_cstamp )
 {
 	http::XmlResponse xrsp ;
-	m_http->Get( ChangesFeed( min_cstamp ), &xrsp, http::Header() ) ;
+	m_http->Get( ChangesFeed( min_cstamp ), &xrsp, http::Header(), 0) ;
 
 	return std::atoi( xrsp.Response()["docs:largestChangestamp"]["@value"].front().Value().c_str() );
 }

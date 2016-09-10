@@ -24,6 +24,9 @@
 #include <memory>
 #include <string>
 
+// dependent libraries
+#include <curl/curl.h>
+
 namespace gr {
 
 class DataStream ;
@@ -43,13 +46,15 @@ public :
 
 	ResponseLog* GetLog() const ;
 	void SetLog( ResponseLog *log ) ;
+	void SetProgressBar( ProgressBar *progressbar) ;
 
 	long Request(
 		const std::string&	method,
 		const std::string&	url,
 		SeekStream			*in,
 		DataStream			*dest,
-		const Header&		hdr ) ;
+		const Header&		hdr,
+		const long			downloadFileBytes = 0) ;
 
 	std::string LastError() const ;
 	std::string LastErrorHeaders() const ;
@@ -58,6 +63,8 @@ public :
 	
 	std::string Escape( const std::string& str ) ;
 	std::string Unescape( const std::string& str ) ;
+
+	static int progress_callback(void *ptr,   curl_off_t TotalDownloadSize,   curl_off_t finishedDownloadSize,   curl_off_t TotalToUpload,   curl_off_t NowUploaded);
 
 private :
 	static std::size_t HeaderCallback( void *ptr, size_t size, size_t nmemb, CurlAgent *pthis ) ;
@@ -72,8 +79,12 @@ private :
 
 private :
 	struct Impl ;
-	std::unique_ptr<Impl>	m_pimpl ;
-	std::unique_ptr<ResponseLog>	m_log ;
+	std::unique_ptr<Impl> m_pimpl ;
+	std::unique_ptr<ResponseLog> m_log ;
+	std::unique_ptr<ProgressBar> m_pb ;
+
+	long totalDownloadSize;
+	long downloadedBytes;
 } ;
 
 } } // end of namespace

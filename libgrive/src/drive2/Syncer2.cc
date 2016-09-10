@@ -140,6 +140,8 @@ std::string to_string( uint64_t n )
 	return s.str();
 }
 
+
+
 bool Syncer2::Upload( Resource *res, bool new_rev )
 {
 	Val meta;
@@ -235,7 +237,7 @@ std::unique_ptr<Feed> Syncer2::GetChanges( long min_cstamp )
 long Syncer2::GetChangeStamp( long min_cstamp )
 {
 	http::ValResponse res ;
-	m_http->Get( ChangesFeed( min_cstamp, 1 ), &res, http::Header() ) ;
+	m_http->Get( ChangesFeed( min_cstamp, 1 ), &res, http::Header(), 0 ) ;
 
 	return std::atoi( res.Response()["largestChangeId"].Str().c_str() );
 }

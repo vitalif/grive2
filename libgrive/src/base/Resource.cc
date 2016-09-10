@@ -149,6 +149,7 @@ void Resource::AssignIDs( const Entry& remote )
 		m_content	= remote.ContentSrc() ;
 		m_is_editable = remote.IsEditable() ;
 		m_etag		= remote.ETag() ;
+		m_downloadFileBytes  = remote.Size() ;
 	}
 }
 
@@ -745,6 +746,11 @@ bool Resource::IsRoot() const
 bool Resource::HasID() const
 {
 	return !m_href.empty() && !m_id.empty() ;
+}
+
+long Resource::DownloadFileBytes() const
+{
+	return m_downloadFileBytes;
 }
 
 } // end of namespace
