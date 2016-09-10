@@ -120,9 +120,9 @@ std::string Entry::Name() const
 	return !m_filename.empty() ? m_filename : m_title ;
 }
 
-long Entry::DownloadFileBytes() const
+long Entry::Size() const
 {
-	return m_downloadFileBytes;
+	return m_size ;
 }
 
 } // end of namespace gr

@@ -58,6 +58,8 @@ public :
 	void SetUploadSpeed( unsigned kbytes ) ;
 	void SetDownloadSpeed( unsigned kbytes ) ;
 
+	void SetProgressBar( ProgressBar *progressbar ) ;
+
 private :
 	http::Header AppendHeader( const http::Header& hdr ) const ;
 	bool CheckRetry( long response ) ;

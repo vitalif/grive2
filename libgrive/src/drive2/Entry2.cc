@@ -66,9 +66,12 @@ void Entry2::Update( const Val& item )
 		m_is_removed	= file["labels"]["trashed"].Bool() ;
 
 		if (file.Has("fileSize"))
-			m_downloadFileBytes	= file["fileSize"].U64() ;
-		else
-			m_downloadFileBytes 	= 0;
+		{
+			m_size	= file["fileSize"].U64() ;
+		} else
+		{
+			m_size 	= 0;
+		}
 
 		if ( !m_is_dir )
 		{

@@ -149,7 +149,7 @@ void Resource::AssignIDs( const Entry& remote )
 		m_content	= remote.ContentSrc() ;
 		m_is_editable = remote.IsEditable() ;
 		m_etag		= remote.ETag() ;
-		m_downloadFileBytes  = remote.DownloadFileBytes();
+		m_downloadFileBytes  = remote.Size() ;
 	}
 }
 

@@ -127,6 +127,7 @@ int Main( int argc, char **argv )
 		( "ignore",		po::value<std::string>(), "Perl RegExp to ignore files (matched against relative paths)." )
 		( "upload-speed,U", po::value<unsigned>(), "Limit upload speed in kbytes per second" )
 		( "download-speed,D", po::value<unsigned>(), "Limit download speed in kbytes per second" )
+		( "progress-bar", "Enable progress bar for upload/download of files")
 	;
 	
 	po::variables_map vm;
@@ -150,12 +151,15 @@ int Main( int argc, char **argv )
 	InitLog(vm) ;
 	
 	Config config(vm) ;
-	
+
 	Log( "config file name %1%", config.Filename(), log::verbose );
 
 	std::unique_ptr<http::Agent> http( new http::CurlAgent );
 	if ( vm.count( "log-http" ) )
 		http->SetLog( new http::ResponseLog( vm["log-http"].as<std::string>(), ".txt" ) );
+
+	ProgressBar *pb = new ProgressBar(vm.count( "progress-bar" ) != 0);
+	http->SetProgressBar(pb);
 
 	if ( vm.count( "auth" ) )
 	{
@@ -179,6 +183,7 @@ int Main( int argc, char **argv )
 		config.Set( "refresh_token", Val( token.RefreshToken() ) ) ;
 		config.Save() ;
 	}
+
 	
 	std::string refresh_token ;
 	try
@@ -211,12 +216,17 @@ int Main( int argc, char **argv )
 
 	if ( vm.count( "dry-run" ) == 0 )
 	{
+		//The progress bar should just be enabled when actual file transfers take place
+		pb->SetShowProgressBar(true);
 		drive.Update() ;
+		pb->SetShowProgressBar(false);
+
+		drive.UpdateChangeStamp();
 		drive.SaveState() ;
 	}
 	else
 		drive.DryRun() ;
-		
+
 	config.Save() ;
 	Log( "Finished!", log::info ) ;
 	return 0 ;

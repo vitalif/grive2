@@ -48,6 +48,11 @@ void AuthAgent::SetLog( http::ResponseLog *log )
 	return m_agent->SetLog( log );
 }
 
+void AuthAgent::SetProgressBar( ProgressBar *progressbar )
+{
+	return m_agent->SetProgressBar( progressbar );
+}
+
 void AuthAgent::SetUploadSpeed( unsigned kbytes )
 {
 	m_agent->SetUploadSpeed( kbytes );

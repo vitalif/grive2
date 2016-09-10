@@ -22,6 +22,7 @@
 #include <string>
 #include "ResponseLog.hh"
 #include "util/Types.hh"
+#include "util/ProgressBar.hh"
 
 namespace gr {
 
@@ -86,6 +87,8 @@ public :
 	
 	virtual std::string Escape( const std::string& str ) = 0 ;
 	virtual std::string Unescape( const std::string& str ) = 0 ;
+
+	virtual void SetProgressBar( ProgressBar* ) = 0;
 } ;
 
 } } // end of namespace

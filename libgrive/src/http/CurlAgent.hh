@@ -46,6 +46,7 @@ public :
 
 	ResponseLog* GetLog() const ;
 	void SetLog( ResponseLog *log ) ;
+	void SetProgressBar( ProgressBar *progressbar) ;
 
 	long Request(
 		const std::string&	method,
@@ -62,13 +63,8 @@ public :
 	
 	std::string Escape( const std::string& str ) ;
 	std::string Unescape( const std::string& str ) ;
-	bool hundredpercentDone;
-	long totalDownlaodSize;
-	long downloadedBytes;
 
 	static int progress_callback(void *ptr,   curl_off_t TotalDownloadSize,   curl_off_t finishedDownloadSize,   curl_off_t TotalToUpload,   curl_off_t NowUploaded);
-	static std::string CalculateByteSize(curl_off_t bytes, bool withSuffix);
-	static unsigned short int DetermineTerminalSize() ;
 
 private :
 	static std::size_t HeaderCallback( void *ptr, size_t size, size_t nmemb, CurlAgent *pthis ) ;
@@ -83,14 +79,12 @@ private :
 
 private :
 	struct Impl ;
-<<<<<<< 357d7ac833ece9e279242b3608c157a691709dc3
-	std::unique_ptr<Impl>	m_pimpl ;
-	std::unique_ptr<ResponseLog>	m_log ;
-=======
-	std::auto_ptr<Impl>	m_pimpl ;
-	std::auto_ptr<ResponseLog>	m_log ;
-	bool progressBar ;
->>>>>>> Progress bar for upload/download of files
+	std::unique_ptr<Impl> m_pimpl ;
+	std::unique_ptr<ResponseLog> m_log ;
+	std::unique_ptr<ProgressBar> m_pb ;
+
+	long totalDownloadSize;
+	long downloadedBytes;
 } ;
 
 } } // end of namespace

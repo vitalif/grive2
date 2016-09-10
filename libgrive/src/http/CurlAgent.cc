@@ -38,9 +38,6 @@
 #include <iostream>
 
 #include <signal.h>
-#include <math.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
 
 namespace {
 
@@ -113,11 +110,16 @@ void CurlAgent::SetLog(ResponseLog *log)
 	m_log.reset( log );
 }
 
+void CurlAgent::SetProgressBar(ProgressBar *progressbar)
+{
+	m_pb.reset(progressbar);
+}
+
 std::size_t CurlAgent::HeaderCallback( void *ptr, size_t size, size_t nmemb, CurlAgent *pthis )
 {
 	char *str = static_cast<char*>(ptr) ;
 	std::string line( str, str + size*nmemb ) ;
-	
+
 	// Check for error (HTTP 400 and above)
 	if ( line.substr( 0, 5 ) == "HTTP/" && line[9] >= '4' )
 		pthis->m_pimpl->error = true;
@@ -127,7 +129,7 @@ std::size_t CurlAgent::HeaderCallback( void *ptr, size_t size, size_t nmemb, Cur
 	
 	if ( pthis->m_log.get() )
 		pthis->m_log->Write( str, size*nmemb );
-	
+
 	static const std::string loc = "Location: " ;
 	std::size_t pos = line.find( loc ) ;
 	if ( pos != line.npos )
@@ -135,7 +137,7 @@ std::size_t CurlAgent::HeaderCallback( void *ptr, size_t size, size_t nmemb, Cur
 		std::size_t end_pos = line.find( "\r\n", pos ) ;
 		pthis->m_pimpl->location = line.substr( loc.size(), end_pos - loc.size() ) ;
 	}
-	
+
 	return size*nmemb ;
 }
 
@@ -146,9 +148,10 @@ std::size_t CurlAgent::Receive( void* ptr, size_t size, size_t nmemb, CurlAgent 
 	if ( pthis->m_log.get() )
 		pthis->m_log->Write( (const char*)ptr, size*nmemb );
 
-	if (pthis->totalDownlaodSize > 0) {
+	if ( pthis->totalDownloadSize > 0 )
+	{
 		pthis->downloadedBytes += (curl_off_t)size*nmemb;
-		CurlAgent::progress_callback(pthis, pthis->totalDownlaodSize, pthis->downloadedBytes, 0L, 0L);
+		CurlAgent::progress_callback(pthis, pthis->totalDownloadSize, pthis->downloadedBytes, 0L, 0L);
 	}
 
 	if ( pthis->m_pimpl->error && pthis->m_pimpl->error_data.size() < 65536 )
@@ -161,101 +164,10 @@ std::size_t CurlAgent::Receive( void* ptr, size_t size, size_t nmemb, CurlAgent 
 }
 
 
-unsigned short int CurlAgent::DetermineTerminalSize() {
-	struct winsize w;
-	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-
-	return w.ws_col;
-}
-
-std::string CurlAgent::CalculateByteSize(curl_off_t bytes, bool withSuffix) {
-	long double KB = bytes / 1024;
-	long double MB = KB / 1024;
-	long double GB = MB / 1024;
-	std::string res;
-	std::string suffix;
-
-	std::ostringstream ss;
-	ss << std::fixed << std::setprecision(2);
-
-	if (GB > 1) {
-		ss << GB;
-		suffix = "GB";
-	}
-	else if (MB > 1) {
-		ss << MB;
-		suffix = "MB";
-	} else {
-		ss << KB;
-		suffix = "KB";
-	}
-
-	res = ss.str() + (withSuffix ? suffix : "");
-
-	return res;
-}
-
-
-int CurlAgent::progress_callback(void *ptr,   curl_off_t TotalDownloadSize,   curl_off_t finishedDownloadSize,   curl_off_t TotalToUpload,   curl_off_t NowUploaded) {
-	curl_off_t processed = (TotalDownloadSize > TotalToUpload) ? finishedDownloadSize : NowUploaded;
-	curl_off_t total = (TotalDownloadSize > TotalToUpload) ? TotalDownloadSize : TotalToUpload;
-
-	if (total <= 0.0)
-        return 0;
-
-	//libcurl seems to process more bytes then the actual file size :)
-	if (processed > total)
-		processed = total;
-
-
-	int availableSize = CurlAgent::DetermineTerminalSize() - 30;	//10 for prefix of percent and 20 for suffix of file size
-
-	int totalDots;
-
-	if (availableSize > 100)
-		totalDots = 100;
-	else if (availableSize < 0)
-		totalDots = 10;
-	else
-		totalDots = availableSize;
-
-    double fraction = (float)processed / total;
-
-    if ((fraction*100) < 100.0)
-    	((CurlAgent*)ptr)->hundredpercentDone = false;
-
-    if (!((CurlAgent*)ptr)->hundredpercentDone) {
-    	printf("\33[2K\r");	//delete previous output line
-    	int dotz = round(fraction * totalDots);
-
-		int count=0;
-		printf("  [%3.0f%%] [", fraction*100);
-
-		for (; count < dotz-1; count++) {
-			printf("=");
-		}
-
-		printf(">");
-
-		for (; count < totalDots-1; count++) {
-			printf(" ");
-		}
-
-		printf("] ");
-
-		printf("%s/%s", CalculateByteSize(processed, false).c_str(), CalculateByteSize(total, true).c_str());
-
-		printf("\r");
-
-		if ((fraction*100) >= 100.0) {
-			((CurlAgent*)ptr)->hundredpercentDone = true;
-			printf("\n");
-		}
-
-		fflush(stdout);
-    }
-
-    return 0;
+int CurlAgent::progress_callback(void *ptr, curl_off_t totalDownloadSize, curl_off_t finishedDownloadSize, curl_off_t totalToUpload, curl_off_t finishedUploaded)
+{
+	((CurlAgent*)ptr)->m_pb->PrintProgressBar(totalDownloadSize, finishedDownloadSize, totalToUpload, finishedUploaded);
+	return 0;
 }
 
 
@@ -276,11 +188,9 @@ long CurlAgent::ExecCurl(
 
 	struct curl_slist *slist = SetHeader( m_pimpl->curl, hdr ) ;
 
-	if (progressBar) {
-		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-		curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, progress_callback);
-		curl_easy_setopt(curl, CURLOPT_XFERINFODATA, this);
-	}
+	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+	curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, progress_callback);
+	curl_easy_setopt(curl, CURLOPT_XFERINFODATA, this);
 
 	CURLcode curl_code = ::curl_easy_perform(curl);
 
@@ -324,8 +234,8 @@ long CurlAgent::Request(
 
 	Init() ;
 	CURL *curl = m_pimpl->curl ;
-	progressBar = false;
-	totalDownlaodSize = 0;
+
+	this->totalDownloadSize = downloadFileBytes;
 
 	// set common options
 	::curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method.c_str() );
@@ -335,17 +245,6 @@ long CurlAgent::Request(
 		::curl_easy_setopt(curl, CURLOPT_READFUNCTION,		&ReadFileCallback ) ;
 		::curl_easy_setopt(curl, CURLOPT_READDATA ,			in ) ;
 		::curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, 	static_cast<curl_off_t>( in->Size() ) ) ;
-
-		if (url.compare("https://accounts.google.com/o/oauth2/token"))
-			progressBar = true;
-		else
-			progressBar = false;
-	} else {
-		if (!boost::starts_with(url, "https://www.googleapis.com/")) {
-			progressBar = true;
-			totalDownlaodSize = downloadFileBytes;
-		} else
-			progressBar = false;
 	}
 
 	return ExecCurl( url, dest, hdr ) ;
