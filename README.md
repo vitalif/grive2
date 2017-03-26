@@ -55,11 +55,15 @@ There are also some optional dependencies:
 - binutils (for libiberty, required for compilation in OpenSUSE, Ubuntu, Arch and etc)
 
 On a Debian/Ubuntu/Linux Mint machine just run the following command to install all
-these packages:
+the dependancies:
 
     sudo apt-get install git cmake build-essential libgcrypt11-dev libyajl-dev \
         libboost-all-dev libcurl4-openssl-dev libexpat1-dev libcppunit-dev binutils-dev
 
+Build package with:
+
+    dpkg-buildpackage -us -uc -j4
+    
 FreeBSD:
 
     pkg install git cmake boost-libs yajl libgcrypt pkgconf cppunit libbfd
