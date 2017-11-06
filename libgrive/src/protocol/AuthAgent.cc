@@ -127,6 +127,16 @@ bool AuthAgent::CheckRetry( long response )
 		os::Sleep( 5 ) ;
 		return true ;
 	}
+
+	// HTTP 403 is the result of API rate limiting. wait a while and try again
+	if ( response == 403 )
+	{
+		Log( "request failed due to rate limiting: %1% (body: %2%). retrying in 5 minutes",
+			response, m_agent->LastError(), log::warning ) ;
+			
+		os::Sleep( 300 ) ;
+		return true ;
+	}
 	
 	// HTTP 401 Unauthorized. the auth token has been expired. refresh it
 	else if ( response == 401 )
