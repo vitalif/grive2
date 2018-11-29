@@ -111,8 +111,8 @@ int Main( int argc, char **argv )
 		( "help,h",		"Produce help message" )
 		( "version,v",	"Display Grive version" )
 		( "auth,a",		"Request authorization token" )
-                ( "id,i",               po::value<std::string>(), "Authentication ID")
-                ( "secret,e",           po::value<std::string>(), "Authentication secret")
+		( "id,i",		po::value<std::string>(), "Authentication ID (only used with 'auth')")
+		( "secret,e",	po::value<std::string>(), "Authentication secret (only used with 'auth')")
 		( "path,p",		po::value<std::string>(), "Path to working copy root")
 		( "dir,s",		po::value<std::string>(), "Single subdirectory to sync")
 		( "verbose,V",	"Verbose mode. Enable more messages than normal.")
@@ -174,21 +174,47 @@ int Main( int argc, char **argv )
 		http->SetProgressReporter( pb.get() );
 	}
 
-	std::string id = default_id;
-	std::string secret = default_secret;
-
-	if( vm.count( "id" ) )
-	{
-		id = vm["id"].as<std::string>();
-	}
-
-	if( vm.count( "secret" ) )
-	{
-		secret = vm["secret"].as<std::string>();
-	}
+	std::string id;
+	std::string secret;
 
 	if ( vm.count( "auth" ) )
 	{
+
+		// logic: commandline -> saved in .grive -> default
+		if( vm.count( "id" ) )
+		{
+			id = vm["id"].as<std::string>();
+		}
+		else
+		{
+			try
+			{
+				id = config.Get("client_id").Str() ;
+			}
+			catch ( Exception& e )
+			{
+				id = default_id;
+			}
+
+		}
+
+		if( vm.count( "secret" ) )
+		{
+			secret = vm["secret"].as<std::string>();
+		}
+		else
+		{
+			try
+			{
+				secret = config.Get("client_secret").Str() ;
+			}
+			catch ( Exception& e )
+			{
+				secret = default_secret;
+			}
+		}
+
+
 		OAuth2 token( http.get(), id, secret ) ;
 		
 		std::cout
@@ -206,10 +232,44 @@ int Main( int argc, char **argv )
 		token.Auth( code ) ;
 		
 		// save to config
+		config.Set( "client_secret", Val( secret ) ) ;
+		config.Set( "client_id", Val( id ) ) ;
 		config.Set( "refresh_token", Val( token.RefreshToken() ) ) ;
 		config.Save() ;
 	}
+	else
+	{
+		if( vm.count( "id" ) || vm.count( "secret" ))
+		{
+			Log(
+				"'id' and 'secret' are only valid when grive is run with the \"-a\" option to (re)authenticate",
+				log::critical ) ;
 	
+			return -1;
+		}
+	}
+
+	// This is not included in the below 'refresh-token' try
+	// as a fallback for cases where 'grive -a' was run with an older version
+	// before we saved the id+secret
+	try
+	{
+		id = config.Get("client_id").Str() ;
+	}
+	catch ( Exception& e )
+	{
+		id = default_id;
+	}
+
+	try
+	{
+		secret = config.Get("client_secret").Str() ;
+	}
+	catch ( Exception& e )
+	{
+		secret = default_secret;
+	}
+
 	std::string refresh_token ;
 	try
 	{
