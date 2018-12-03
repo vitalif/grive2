@@ -106,6 +106,32 @@ your folder. They need to be added explicitly to your Google Drive: go to the
 Google Drive website, right click on the file or folder and chose 'Add to My
 Drive'.
 
+### Different OAuth2 client to workaround over quota issues
+
+The default OAuth2 client supplied with grive is sometimes over quota and grive 
+will then fail to sync. You can supply your own OAuth2 client credentials by 
+following these steps:
+
+1. Go to https://console.developers.google.com/apis/api/drive.googleapis.com
+2. Chose a project (you might need to create one first)
+3. Go to https://console.developers.google.com/apis/library/drive.googleapis.com and 
+   "Enable" the Google Drive APIs
+4. Create new Credentials on the folloing screen(s)
+5. In the "Find out what credentials you need" dialog, choose: 
+   - Which API are you using: "Google Drive API"
+   - Where will you be calling the API from: "Other UI (...CLI...)"
+   - What data will you be accessing: "User Data"
+6. In the next steps create a client id (name doesn't matter) and 
+   setup the consent screen (defaults are ok, no need for any URLs)
+7. The needed "Client ID" and "Client Secret" are either in the shown download 
+   or can later found by clicking on the created credential on 
+   https://console.developers.google.com/apis/credentials/  
+8. Call `grive -a --id <client_id> --secret <client_secret>` and follow the steps 
+   to authenticate the OAuth2 client to allow it to access your drive folder. 
+
+Both Client ID and Client Secret are saved in the `.grive` file and even reused on 
+the next `grive -a` (without `--id` and `--secret`) in that folder. 
+
 ## Installation
 
 For the detailed instructions, see http://yourcmc.ru/wiki/Grive2#Installation
@@ -172,6 +198,7 @@ Grive uses cmake to build. Basic install sequence is
 - faster upload of new and changed files. now Grive uploads files without first calculating
   md5 checksum when file is created locally or when its size changes.
 - added -P/--progress-bar option to print ASCII progress bar for each processed file (pull request by @svartkanin)
+- supply your own OAuth2 client to work around over quota problems with the default OAuth2 client id
 
 ### Grive2 v0.5
 
