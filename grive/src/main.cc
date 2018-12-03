@@ -111,8 +111,8 @@ int Main( int argc, char **argv )
 		( "help,h",		"Produce help message" )
 		( "version,v",	"Display Grive version" )
 		( "auth,a",		"Request authorization token" )
-		( "id,i",		po::value<std::string>(), "Authentication ID (only used with 'auth')")
-		( "secret,e",	po::value<std::string>(), "Authentication secret (only used with 'auth')")
+		( "id,i",		po::value<std::string>(), "Authentication ID (only used with '-a')")
+		( "secret,e",	po::value<std::string>(), "Authentication secret (only used with '-a')")
 		( "path,p",		po::value<std::string>(), "Path to working copy root")
 		( "dir,s",		po::value<std::string>(), "Single subdirectory to sync")
 		( "verbose,V",	"Verbose mode. Enable more messages than normal.")
@@ -242,7 +242,7 @@ int Main( int argc, char **argv )
 		if( vm.count( "id" ) || vm.count( "secret" ))
 		{
 			Log(
-				"'id' and 'secret' are only valid when grive is run with the \"-a\" option to (re)authenticate",
+				"'--id' and '--secret' are only valid when grive is run with the \"-a\" option to (re)authenticate",
 				log::critical ) ;
 	
 			return -1;
