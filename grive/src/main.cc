@@ -229,13 +229,23 @@ int Main( int argc, char **argv )
 		std::string code ;
 		std::cin >> code ;
 		
+		Log( "Authenticating code: %1%",
+			code, log::verbose) ;
+
 		token.Auth( code ) ;
 		
+		Log( "tokens: refresh_token: %1%, token: %2%",
+			token.RefreshToken(), token.AccessToken(), log::verbose) ;
+
+
 		// save to config
 		config.Set( "client_secret", Val( secret ) ) ;
 		config.Set( "client_id", Val( id ) ) ;
 		config.Set( "refresh_token", Val( token.RefreshToken() ) ) ;
 		config.Save() ;
+
+		Log( "Saved data to .grive file", log::verbose) ;
+
 	}
 	else
 	{
