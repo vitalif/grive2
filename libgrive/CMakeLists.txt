@@ -3,12 +3,18 @@ project(libgrive)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 find_package(LibGcrypt REQUIRED)
-find_package(CURL REQUIRED)
+if (NOT APPLE)
+    find_package(CURL REQUIRED)
+endif(NOT APPLE)
 find_package(Backtrace)
 find_package(Boost 1.40.0 COMPONENTS program_options filesystem unit_test_framework regex system REQUIRED)
 find_package(BFD)
 find_package(CppUnit)
 find_package(Iberty)
+
+if (APPLE)
+	find_library(MAC_FRAME_FOUNDATION Foundation ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
+endif()
 
 find_package(PkgConfig)
 pkg_check_modules(YAJL REQUIRED yajl)
@@ -27,13 +33,13 @@ if ( BFD_FOUND AND Backtrace_FOUND )
 		src/bfd/*.cc
 	)
 	add_definitions( -DHAVE_BFD )
-	
+
 endif ( BFD_FOUND AND Backtrace_FOUND )
 
 if ( IBERTY_FOUND )
 	set( OPT_LIBS	${OPT_LIBS}	${IBERTY_LIBRARY} )
 else ( IBERTY_FOUND )
-  set( IBERTY_LIBRARY "" )
+	set( IBERTY_LIBRARY "" )
 endif ( IBERTY_FOUND )
 
 include_directories(
@@ -45,15 +51,15 @@ include_directories(
 )
 
 file (GLOB PROTOCOL_HEADERS
-    ${libgrive_SOURCE_DIR}/src/protocol/*.hh
+	${libgrive_SOURCE_DIR}/src/protocol/*.hh
 )
 
 file (GLOB UTIL_HEADERS
-    ${libgrive_SOURCE_DIR}/src/util/*.hh
+	${libgrive_SOURCE_DIR}/src/util/*.hh
 )
 
 file (GLOB XML_HEADERS
-    ${libgrive_SOURCE_DIR}/src/xml/*.hh
+	${libgrive_SOURCE_DIR}/src/xml/*.hh
 )
 
 file (GLOB LIBGRIVE_SRC
@@ -66,13 +72,17 @@ file (GLOB LIBGRIVE_SRC
 	src/util/log/*.cc
 )
 
+if (APPLE)
+	file (GLOB LIBGRIVE_SRC_OBJC src/http/*.mm)
+endif(APPLE)
+
 add_definitions(
 	-DTEST_DATA="${libgrive_SOURCE_DIR}/test/data/"
 	-DSRC_DIR="${libgrive_SOURCE_DIR}/src"
 )
 
-#add_library( grive SHARED ${LIBGRIVE_SRC} ${OPT_SRC} )
-add_library( grive STATIC ${LIBGRIVE_SRC} ${OPT_SRC} )
+#add_library( grive SHARED ${LIBGRIVE_SRC} ${OPT_SRC} ${LIBGRIVE_SRC_OBJC} )
+add_library( grive STATIC ${LIBGRIVE_SRC} ${OPT_SRC} ${LIBGRIVE_SRC_OBJC} )
 
 target_link_libraries( grive
 	${YAJL_LIBRARIES}
@@ -85,6 +95,9 @@ target_link_libraries( grive
 	${IBERTY_LIBRARY}
 	${OPT_LIBS}
 )
+if (APPLE)
+	target_link_libraries(grive ${MAC_FRAME_FOUNDATION})
+endif(APPLE)
 
 #set_target_properties(grive PROPERTIES
 #    SOVERSION 0 VERSION ${GRIVE_VERSION}
@@ -108,8 +121,7 @@ endif()
 IF ( CPPUNIT_FOUND )
 	message("-- Building unitary tests along with the library and the binary")
 	set( OPT_INCS		${CPPUNIT_INCLUDE_DIR} )
-    
-    # list of test source files here
+	# list of test source files here
 	file(GLOB TEST_SRC
 		test/base/*.cc
 		test/util/*.cc
@@ -124,7 +136,7 @@ IF ( CPPUNIT_FOUND )
 		grive
 		${CPPUNIT_LIBRARY}
 	)
-        
+
 ENDIF ( CPPUNIT_FOUND )
 
 file(GLOB BTEST_SRC
