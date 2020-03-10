@@ -100,15 +100,17 @@ long NSURLSessionAgent::Request( const std::string &method,
 			      m_pimpl->error_headers = hdr.Str();
 			      return;
 		      }
-		      assert( data.bytes != nil );
 		      statusCode = ( ( NSHTTPURLResponse * )response ).statusCode;
 		      if ( statusCode < 200 || statusCode > 299 ) {
 			      m_pimpl->error = true;
-			      m_pimpl->error_data.append(
-			          static_cast<const char *>( data.bytes ) );
+			      if ( data.bytes != nil ) {
+				      m_pimpl->error_data.append(
+				          static_cast<const char *>( data.bytes ) );
+			      }
+		      } else {
+			      m_pimpl->dest->Write(
+			          static_cast<const char *>( data.bytes ), data.length );
 		      }
-		      m_pimpl->dest->Write( static_cast<const char *>( data.bytes ),
-		                            data.length );
 		      dispatch_semaphore_signal( sema );
 	      }] resume];
 	dispatch_semaphore_wait( sema, dispatch_time( DISPATCH_TIME_NOW, 30e9 ) );
