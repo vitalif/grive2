@@ -24,10 +24,6 @@
 
 #include <string>
 
-#if defined(__FreeBSD__)
-#define off64_t off_t
-#endif
-
 namespace gr {
 
 class DateTime ;

@@ -10,9 +10,13 @@ message(WARNING "Version to build: ${GRIVE_VERSION}")
 # common compile options
 add_definitions( -DVERSION="${GRIVE_VERSION}" )
 add_definitions( -D_FILE_OFFSET_BITS=64 -std=c++0x )
-if ( APPLE )
+if ( APPLE OR )
 	add_definitions( -Doff64_t=off_t )
 endif ( APPLE )
+
+if ( CMAKE_SYSTEM MATCHES "^FreeBSD" )
+        add_definitions( -Doff64_t=off_t )
+endif ( CMAKE_SYSTEM MATCHES "^FreeBSD" )
 
 find_program(
 	HAVE_SYSTEMD systemd
