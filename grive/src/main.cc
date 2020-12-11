@@ -241,7 +241,9 @@ int Main( int argc, char **argv )
 	if ( vm.count( "download-speed" ) > 0 )
 		agent.SetDownloadSpeed( vm["download-speed"].as<unsigned>() * 1000 );
 
-	Drive drive( &syncer, config.GetAll() ) ;
+	DateTime startTime = DateTime::Now();
+	Log( "\nStarted at %1%", startTime, log::info );
+	Drive drive( &syncer, config.GetAll() );
 	drive.DetectChanges() ;
 
 	if ( vm.count( "dry-run" ) == 0 )
@@ -259,7 +261,12 @@ int Main( int argc, char **argv )
 		drive.DryRun() ;
 		
 	config.Save() ;
-	Log( "Finished!", log::info ) ;
+	DateTime endTime = DateTime::Now();
+	Log(
+		"Finished at %1% (%2% seconds)",
+		endTime,
+		endTime.Sec() - startTime.Sec(),
+		log::info );
 	return 0 ;
 }
 
