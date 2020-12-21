@@ -24,5 +24,14 @@ if ( HAVE_SYSTEMD )
 	add_subdirectory( systemd )
 endif( HAVE_SYSTEMD )
 
+find_program(
+	HAVE_LAUNCHD launchd
+	PATHS /sbin
+	NO_DEFAULT_PATH
+)
+if ( HAVE_LAUNCHD )
+	add_subdirectory( launchd )
+endif( HAVE_LAUNCHD )
+
 add_subdirectory( libgrive )
 add_subdirectory( grive )
