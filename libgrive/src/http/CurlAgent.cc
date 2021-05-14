@@ -84,6 +84,7 @@ void CurlAgent::Init()
 	::curl_easy_setopt( m_pimpl->curl, CURLOPT_HEADERFUNCTION,	&CurlAgent::HeaderCallback ) ;
 	::curl_easy_setopt( m_pimpl->curl, CURLOPT_HEADERDATA,		this ) ;
 	::curl_easy_setopt( m_pimpl->curl, CURLOPT_HEADER,			0L ) ;
+	::curl_easy_setopt( m_pimpl->curl, CURLOPT_TIMEOUT, 		30L );
 	if ( mMaxUpload > 0 )
 		::curl_easy_setopt( m_pimpl->curl, CURLOPT_MAX_SEND_SPEED_LARGE, mMaxUpload ) ;
 	if ( mMaxDownload > 0 )
