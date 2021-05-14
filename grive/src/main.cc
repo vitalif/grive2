@@ -23,7 +23,11 @@
 #include "base/Drive.hh"
 #include "drive2/Syncer2.hh"
 
+#ifdef __APPLE__
+#include "http/NSURLSessionAgent.hh"
+#else
 #include "http/CurlAgent.hh"
+#endif
 #include "protocol/AuthAgent.hh"
 #include "protocol/OAuth2.hh"
 #include "json/Val.hh"
@@ -80,19 +84,19 @@ void InitLog( const po::variables_map& vm )
 		file_log->Enable( log::warning ) ;
 		file_log->Enable( log::error ) ;
 		file_log->Enable( log::critical ) ;
-		
+
 		// log grive version to log file
 		file_log->Log( log::Fmt("grive version " VERSION " " __DATE__ " " __TIME__), log::verbose ) ;
 		file_log->Log( log::Fmt("current time: %1%") % DateTime::Now(), log::verbose ) ;
-		
+
 		comp_log->Add( file_log ) ;
 	}
-	
+
 	if ( vm.count( "verbose" ) )
 	{
 		console_log->Enable( log::verbose ) ;
 	}
-	
+
 	if ( vm.count( "debug" ) )
 	{
 		console_log->Enable( log::verbose ) ;
@@ -104,7 +108,7 @@ void InitLog( const po::variables_map& vm )
 int Main( int argc, char **argv )
 {
 	InitGCrypt() ;
-	
+
 	// construct the program options
 	po::options_description desc( "Grive options" );
 	desc.add_options()
@@ -131,7 +135,7 @@ int Main( int argc, char **argv )
 		( "download-speed,D", po::value<unsigned>(), "Limit download speed in kbytes per second" )
 		( "progress-bar,P", "Enable progress bar for upload/download of files")
 	;
-	
+
 	po::variables_map vm;
 	try
 	{
@@ -143,7 +147,7 @@ int Main( int argc, char **argv )
 		return -1;
 	}
 	po::notify( vm );
-	
+
 	// simple commands that doesn't require log or config
 	if ( vm.count("help") )
 	{
@@ -159,12 +163,16 @@ int Main( int argc, char **argv )
 
 	// initialize logging
 	InitLog( vm ) ;
-	
+
 	Config config( vm ) ;
-	
+
 	Log( "config file name %1%", config.Filename(), log::verbose );
 
+#ifdef __APPLE__
+	std::unique_ptr<http::Agent> http( new http::NSURLSessionAgent );
+#else
 	std::unique_ptr<http::Agent> http( new http::CurlAgent );
+#endif
 	if ( vm.count( "log-http" ) )
 		http->SetLog( new http::ResponseLog( vm["log-http"].as<std::string>(), ".txt" ) );
 
@@ -185,34 +193,34 @@ int Main( int argc, char **argv )
                         : default_secret ;
 
 		OAuth2 token( http.get(), id, secret ) ;
-		
+
 		if ( vm.count("print-url") )
 		{
 			std::cout <<  token.MakeAuthURL() << std::endl ;
 			return 0 ;
 		}
-		
+
 		std::cout
 			<< "-----------------------\n"
 			<< "Please go to this URL and get an authentication code:\n\n"
 			<< token.MakeAuthURL()
 			<< std::endl ;
-		
+
 		std::cout
 			<< "\n-----------------------\n"
 			<< "Please input the authentication code here: " << std::endl ;
 		std::string code ;
 		std::cin >> code ;
-		
+
 		token.Auth( code ) ;
-		
+
 		// save to config
 		config.Set( "id", Val( id ) ) ;
 		config.Set( "secret", Val( secret ) ) ;
 		config.Set( "refresh_token", Val( token.RefreshToken() ) ) ;
 		config.Save() ;
 	}
-	
+
 	std::string refresh_token ;
 	std::string id ;
 	std::string secret ;
@@ -228,10 +236,10 @@ int Main( int argc, char **argv )
 			"Please run grive with the \"-a\" option if this is the "
 			"first time you're accessing your Google Drive!",
 			log::critical ) ;
-		
+
 		return -1;
 	}
-	
+
 	OAuth2 token( http.get(), refresh_token, id, secret ) ;
 	AuthAgent agent( token, http.get() ) ;
 	v2::Syncer2 syncer( &agent );
@@ -257,7 +265,7 @@ int Main( int argc, char **argv )
 	}
 	else
 		drive.DryRun() ;
-		
+
 	config.Save() ;
 	Log( "Finished!", log::info ) ;
 	return 0 ;
