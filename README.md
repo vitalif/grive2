@@ -86,14 +86,54 @@ directory (in this case the `$HOME/google-drive`):
 First install the `inotify-tools` (seems to be named like that in all major distros): 
 test that it works by calling `inotifywait -h`.
 
-Prepare a Google Drive folder in your $HOME directory with `grive -a`.
+Ensure you have first initialized a Google Drive folder per the instructions in the usage section.
+Execute these commands from the directory above the folder you are using. In the example below,
+`google-drive` was initialized inside the user `$HOME` directory.
 
 ```bash
-# 'google-drive' is the name of your Google Drive folder in your $HOME directory
 systemctl --user enable grive-timer@$(systemd-escape google-drive).timer
 systemctl --user start grive-timer@$(systemd-escape google-drive).timer
 systemctl --user enable grive-changes@$(systemd-escape google-drive).service
 systemctl --user start grive-changes@$(systemd-escape google-drive).service
+```
+
+For example:
+```
+$ systemctl --user enable grive-timer@$(systemd-escape google-drive).timer
+Created symlink /home/<user>/.config/systemd/user/timers.target.wants/grive-timer@google\x2ddrive.timer → /usr/lib/systemd/user/grive-timer@.timer.
+$ systemctl --user start grive-timer@$(systemd-escape google-drive).timer
+$ systemctl --user enable grive-changes@$(systemd-escape google-drive).service
+Created symlink /home/<user>/.config/systemd/user/default.target.wants/grive-changes@google\x2ddrive.service → /usr/lib/systemd/user/grive-changes@.service.
+$ systemctl --user start grive-changes@$(systemd-escape google-drive).service
+```
+
+You can check the status of these services as so:
+```
+$ systemctl --user status grive-timer@$(systemd-escape google-drive).timer
+● grive-timer@google\x2ddrive.timer - Google drive sync (fixed intervals)
+     Loaded: loaded (/usr/lib/systemd/user/grive-timer@.timer; enabled; vendor preset: enabled)
+     Active: active (running) since Sun 2020-09-06 13:16:33 EDT; 9min ago
+    Trigger: n/a
+   Triggers: ● grive-timer@google\x2ddrive.service
+   
+$ systemctl --user status grive-timer@$(systemd-escape google-drive).service
+● grive-timer@google\x2ddrive.service - Google drive sync
+     Loaded: loaded (/usr/lib/systemd/user/grive-timer@.service; static; vendor preset: enabled)
+     Active: active (running) since Sun 2020-09-06 13:16:33 EDT; 10min ago
+TriggeredBy: ● grive-timer@google\x2ddrive.timer
+   Main PID: 124255 (grive-sync.sh)
+     Memory: 3.0G
+     CGroup: /user.slice/user-1000.slice/user@1000.service/grive\x2dtimer.slice/grive-timer@google\>
+             ├─124255 /bin/bash /usr/lib/grive/grive-sync.sh sync google\x2ddrive
+             ├─124295 grive -p google-drive
+             └─124296 grep -v -E ^Reading local directories$|^Reading remote server file list$|^Syn>
+
+Sep 06 13:26:59 pop-os grive-sync.sh[124296]: sync "somefolder/somepath"
+```
+
+Tail the service unit to gauge the current activity:
+```
+journalctl --user -f -u grive-timer@$(systemd-escape google-drive).service
 ```
 
 You can enable and start these two units for multiple folders in your `$HOME`
