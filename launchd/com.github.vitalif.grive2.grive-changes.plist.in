@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>Label</key>
+		<string>com.github.vitalif.grive2.grive-changes</string>
+		<key>ProgramArguments</key>
+		<array>
+			<string>@GRIVE_SYNC_SH_BINARY@</string>
+			<string>listen</string>
+			<string>RELATIVE PATH FROM $HOME TO SYNC HERE</string>
+		</array>
+		<key>RunAtLoad</key>
+		<true />
+		<key>StandardOutPath</key>
+		<!-- Change HOME below to your $HOME path, e.g. /Users/name -->
+		<string>HOME/Library/Logs/grive2.log</string>
+		<key>StandardErrorPath</key>
+		<string>HOME/Library/Logs/grive2.log</string>
+	</dict>
+</plist>
