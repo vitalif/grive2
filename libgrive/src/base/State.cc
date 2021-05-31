@@ -79,6 +79,7 @@ State::State( const fs::path& root, const Val& options  ) :
 
 	m_ign_changed = m_orig_ign != "" && m_orig_ign != m_ign;
 	m_ign_re = boost::regex( m_ign.empty() ? "^\\.(grive$|grive_state$|trash)" : ( m_ign+"|^\\.(grive$|grive_state$|trash)" ) );
+        Log( "Ignore file regexp: %1%", m_ign_re.str(), log::verbose );
 }
 
 State::~State()
@@ -388,7 +389,7 @@ bool State::ParseIgnoreFile( const char* buffer, int size )
 			for ( int j = 0; j < (int)parts.size(); j++ )
 			{
 				cur = cur.size() > 0 ? cur + "/" + parts[j] : "^" + parts[j];
-				str = ( str.size() > 0 ? str + "|" + cur : cur ) + ( j < (int)parts.size()-1 ? "$" : "(/|$)" );
+				str = ( str.size() > 0 ? str + "|" + cur : cur ) + "$";
 			}
 			include_re = include_re + ( include_re.size() > 0 ? "|" : "" ) + str;
 		}
