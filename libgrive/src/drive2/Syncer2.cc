@@ -79,13 +79,13 @@ bool Syncer2::Create( Resource *res )
 	assert( res->Parent()->IsFolder() ) ;
 	assert( res->Parent()->GetState() == Resource::sync ) ;
 	assert( res->ResourceID().empty() ) ;
-	
+
 	if ( !res->Parent()->IsEditable() )
 	{
 		Log( "Cannot upload %1%: parent directory read-only. %2%", res->Name(), res->StateStr(), log::warning ) ;
 		return false ;
 	}
-	
+
 	return Upload( res, false );
 }
 
@@ -122,7 +122,10 @@ bool Syncer2::Move( Resource* res, Resource* newParentRes, std::string newFilena
 		hdr2.Add( "Content-Type: application/json" );
 		http::ValResponse vrsp ;
 		// Don't change modified date because we're only moving
-		long http_code = m_http->Put(
+		#ifndef NDEBUG
+		const long http_code =
+		#endif
+		m_http->Put(
 			feeds::files + "/" + res->ResourceID() + "?modifiedDateBehavior=noChange" + addRemoveParents,
 			json_meta, &vrsp, hdr2
 		) ;
@@ -164,11 +167,19 @@ bool Syncer2::Upload( Resource *res, bool new_rev )
 		http::Header hdr2 ;
 		hdr2.Add( "Content-Type: application/json" );
 		http::ValResponse vrsp ;
+		#ifndef NDEBUG
 		long http_code = 0;
+		#endif
 		if ( res->ResourceID().empty() )
-			http_code = m_http->Post( feeds::files, json_meta, &vrsp, hdr2 ) ;
+			#ifndef NDEBUG
+			http_code =
+			#endif
+			m_http->Post( feeds::files, json_meta, &vrsp, hdr2 ) ;
 		else
-			http_code = m_http->Put( feeds::files + "/" + res->ResourceID(), json_meta, &vrsp, hdr2 ) ;
+			#ifndef NDEBUG
+			http_code =
+			#endif
+			m_http->Put( feeds::files + "/" + res->ResourceID(), json_meta, &vrsp, hdr2 ) ;
 		valr = vrsp.Response();
 		assert( http_code == 200 && !( valr["id"].Str().empty() ) );
 	}
