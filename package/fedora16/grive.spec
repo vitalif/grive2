@@ -36,6 +36,7 @@ BuildRequires:  expat-devel
 BuildRequires:  openssl-devel
 BuildRequires:  boost-devel
 BuildRequires:  binutils-devel
+BuildRequires:  cpprest-devel
 
 %description
 The purpose of this project is to provide an independent implementation

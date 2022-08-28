@@ -39,12 +39,12 @@ grive -a
 
 A URL should be printed. Go to the link. You will need to login to your Google
 account if you haven't done so. After granting the permission to Grive, the
-browser will show you an authenication code. Copy-and-paste that to the
-standard input of Grive.
+authorization code will be forwarded to the Grive application and you will be
+redirected to a localhost web page confirming the authorization.
 
-If everything works fine, Grive will create .grive and .grive_state files in your
-current directory. It will also start downloading files from your Google Drive to
-your current directory.
+If everything works fine, Grive will create .grive and .grive\_state files in
+your current directory. It will also start downloading files from your Google
+Drive to your current directory.
 
 To resync the direcory, run `grive` in the folder.
 
@@ -154,6 +154,7 @@ You need the following libraries:
 - libgcrypt
 - Boost (Boost filesystem, program_options, regex, unit_test_framework and system are required)
 - expat
+- libcpprest-dev
 
 There are also some optional dependencies:
 - CppUnit (for unit tests)
@@ -165,16 +166,17 @@ these packages:
 
     sudo apt-get install git cmake build-essential libgcrypt20-dev libyajl-dev \
         libboost-all-dev libcurl4-openssl-dev libexpat1-dev libcppunit-dev binutils-dev \
-        debhelper zlib1g-dev dpkg-dev pkg-config
+        debhelper zlib1g-dev dpkg-dev pkg-config libcpprest-dev
 
 Fedora:
 
-    sudo dnf install git cmake libgcrypt-devel gcc-c++ libstdc++ yajl-devel boost-devel libcurl-devel expat-devel binutils zlib
+    sudo dnf install git cmake libgcrypt-devel gcc-c++ libstdc++ yajl-devel boost-devel libcurl-devel expat-devel binutils zlib cpprest-devel
 
 
 FreeBSD:
 
     pkg install git cmake boost-libs yajl libgcrypt pkgconf cppunit libbfd
+    cpprestsdk
 
 ### Build Debian packages
 

@@ -45,12 +45,20 @@
 #include <cstdlib>
 #include <iostream>
 #include <unistd.h>
+#include <future>
+
+#include <cpprest/http_listener.h>
+#include <cpprest/uri.h>
 
 const std::string default_id            = APP_ID ;
 const std::string default_secret        = APP_SECRET ;
+const std::string default_redirect_uri  = "http://localhost:9898" ;
 
 using namespace gr ;
 namespace po = boost::program_options;
+
+using namespace web::http::experimental::listener;
+using namespace web::http;
 
 // libgcrypt insist this to be done in application, not library
 void InitGCrypt()
@@ -101,6 +109,63 @@ void InitLog( const po::variables_map& vm )
 	LogBase::Inst( comp_log.release() ) ;
 }
 
+// AuthCode reads an authorization code from the "code" query parameter passed
+// via client-side redirect to the redirect_uri specified in uri
+std::string AuthCode( std::string uri )
+{
+	// Set up an HTTP listener that is waiting for Google
+	// to hit the specified local URI with the authorization
+	// code response
+	http_listener listener(uri);
+	listener.
+		open().
+		then([uri]() {
+			std::cout
+				<< "\n"
+				<< "Listening on " << uri << " for an authorization code from Google"
+				<< std::endl;
+		}).
+		wait();
+
+	// Set up a promise to read the authorization code from the
+	// redirect
+	std::promise<std::string> result;
+	listener.support(methods::GET, [&result] (http_request req) {
+		// Extract the "code" query parameter
+		auto params = uri::split_query(req.request_uri().query());
+		auto found_code = params.find("code");
+
+		// If auth code is missing, respond with basic web page
+		// containing error message
+		if (found_code == params.end()) {
+			std::cout
+				<< "request received without auth code: " << req.absolute_uri().to_string()
+				<< std::endl;
+			auto msg =
+				"grive2 authorization code redirect missing 'code' query parameter.\n\n"
+				"Try the auth flow again.";
+			req.reply(status_codes::BadRequest, msg);
+		}
+
+		// If found, respond with basic web page telling user to close
+		// the window and pass the actual code back to the rest of the
+		// application
+		auto code = found_code->second;
+		std::cout << "received authorization code" << std::endl;
+		auto msg = "Received grive2 authorization code. You may now close this window.";
+		req.reply(status_codes::OK, msg).wait();
+		result.set_value(code);
+	});
+
+	// Block until we receive an auth code
+	std::string code = result.get_future().get();
+
+	// Having received the code, block until listener is shut down
+	listener.close().wait();
+
+	return code;
+}
+
 int Main( int argc, char **argv )
 {
 	InitGCrypt() ;
@@ -115,6 +180,7 @@ int Main( int argc, char **argv )
                 ( "secret,e",           po::value<std::string>(), "Authentication secret")
                 ( "print-url",          "Only print url for request")
 		( "path,p",		po::value<std::string>(), "Path to working copy root")
+		( "redirect-uri",	po::value<std::string>(), "local URI on which to listen for auth redirect")
 		( "dir,s",		po::value<std::string>(), "Single subdirectory to sync")
 		( "verbose,V",	"Verbose mode. Enable more messages than normal.")
 		( "log-http",	po::value<std::string>(), "Log all HTTP responses in this file for debugging.")
@@ -183,6 +249,9 @@ int Main( int argc, char **argv )
 		std::string secret = vm.count( "secret" ) > 0
                         ? vm["secret"].as<std::string>()
                         : default_secret ;
+		std::string uri = vm.count( "redirect-uri" ) > 0
+			? vm["redirect-uri"].as<std::string>()
+			: default_redirect_uri ;
 
 		OAuth2 token( http.get(), id, secret ) ;
 		
@@ -194,16 +263,11 @@ int Main( int argc, char **argv )
 		
 		std::cout
 			<< "-----------------------\n"
-			<< "Please go to this URL and get an authentication code:\n\n"
+			<< "Please go to this URL to authorize the app:\n\n"
 			<< token.MakeAuthURL()
 			<< std::endl ;
-		
-		std::cout
-			<< "\n-----------------------\n"
-			<< "Please input the authentication code here: " << std::endl ;
-		std::string code ;
-		std::cin >> code ;
-		
+
+		std::string code = AuthCode(uri);
 		token.Auth( code ) ;
 		
 		// save to config

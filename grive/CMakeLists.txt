@@ -1,6 +1,8 @@
 project( grive )
 
 find_package(Boost COMPONENTS program_options REQUIRED)
+find_package(cpprestsdk REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 include_directories(
 	${grive_SOURCE_DIR}/../libgrive/src
@@ -18,6 +20,8 @@ add_executable( grive_executable
 
 target_link_libraries( grive_executable
 	grive
+	OpenSSL::Crypto
+	cpprestsdk::cpprest
 )
 
 set(DEFAULT_APP_ID "615557989097-i93d4d1ojpen0m0dso18ldr6orjkidgf.apps.googleusercontent.com")
