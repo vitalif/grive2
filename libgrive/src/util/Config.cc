@@ -47,6 +47,8 @@ Config::Config( const po::variables_map& vm )
 	m_cmd.Add( "path",		Val(vm.count("path") > 0
 		? vm["path"].as<std::string>()
 		: default_root_folder ) ) ;
+	if ( vm.count( "redirect_uri" ) > 0 )
+		m_cmd.Add( "redirect_uri",	Val( vm["redirect_uri"].as<std::string>() ) ) ;
 	m_cmd.Add( "dir",		Val(vm.count("dir") > 0
 		? vm["dir"].as<std::string>()
 		: "" ) ) ;

@@ -249,11 +249,11 @@ int Main( int argc, char **argv )
 		std::string secret = vm.count( "secret" ) > 0
                         ? vm["secret"].as<std::string>()
                         : default_secret ;
-		std::string uri = vm.count( "redirect-uri" ) > 0
+		std::string redirect_uri = vm.count( "redirect-uri" ) > 0
 			? vm["redirect-uri"].as<std::string>()
 			: default_redirect_uri ;
 
-		OAuth2 token( http.get(), id, secret ) ;
+		OAuth2 token( http.get(), id, secret, redirect_uri ) ;
 		
 		if ( vm.count("print-url") )
 		{
@@ -267,24 +267,27 @@ int Main( int argc, char **argv )
 			<< token.MakeAuthURL()
 			<< std::endl ;
 
-		std::string code = AuthCode(uri);
+		std::string code = AuthCode(redirect_uri);
 		token.Auth( code ) ;
 		
 		// save to config
 		config.Set( "id", Val( id ) ) ;
 		config.Set( "secret", Val( secret ) ) ;
 		config.Set( "refresh_token", Val( token.RefreshToken() ) ) ;
+		config.Set( "redirect_uri", Val( redirect_uri ) ) ;
 		config.Save() ;
 	}
 	
 	std::string refresh_token ;
 	std::string id ;
 	std::string secret ;
+	std::string redirect_uri ;
 	try
 	{
 		refresh_token = config.Get("refresh_token").Str() ;
 		id = config.Get("id").Str() ;
 		secret = config.Get("secret").Str() ;
+		redirect_uri = config.Get("redirect_uri").Str() ;
 	}
 	catch ( Exception& e )
 	{
@@ -296,7 +299,7 @@ int Main( int argc, char **argv )
 		return -1;
 	}
 	
-	OAuth2 token( http.get(), refresh_token, id, secret ) ;
+	OAuth2 token( http.get(), refresh_token, id, secret, redirect_uri ) ;
 	AuthAgent agent( token, http.get() ) ;
 	v2::Syncer2 syncer( &agent );
 

@@ -35,12 +35,14 @@ public :
 	OAuth2(
 		http::Agent* agent,
 		const std::string&	client_id,
-		const std::string&	client_secret ) ;
+		const std::string&	client_secret,
+		const std::string&	redirect_uri ) ;
 	OAuth2(
 		http::Agent* agent,
 		const std::string&	refresh_code,
 		const std::string&	client_id,
-		const std::string&	client_secret ) ;
+		const std::string&	client_secret,
+		const std::string&	redirect_uri ) ;
 
 	std::string Str() const ;
 
@@ -62,6 +64,7 @@ private :
 	
 	const std::string	m_client_id ;
 	const std::string	m_client_secret ;
+	const std::string	m_redirect_uri ;
 } ;
 
 } // end of namespace

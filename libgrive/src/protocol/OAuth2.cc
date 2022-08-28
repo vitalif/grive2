@@ -35,12 +35,14 @@ const std::string token_url		= "https://accounts.google.com/o/oauth2/token" ;
 OAuth2::OAuth2(
 	http::Agent* agent,
 	const std::string& refresh_code,
-	const std::string&	client_id,
-	const std::string&	client_secret ) :
+	const std::string& client_id,
+	const std::string& client_secret,
+	const std::string& redirect_uri ) :
 	m_refresh( refresh_code ),
 	m_agent( agent ),
 	m_client_id( client_id ),
-	m_client_secret( client_secret )
+	m_client_secret( client_secret ),
+	m_redirect_uri ( redirect_uri )
 {
 	Refresh( ) ;
 }
@@ -48,10 +50,12 @@ OAuth2::OAuth2(
 OAuth2::OAuth2(
 	http::Agent* agent,
 	const std::string&	client_id,
-	const std::string&	client_secret ) :
+	const std::string&	client_secret,
+	const std::string&	redirect_uri ) :
 	m_agent( agent ),
 	m_client_id( client_id ),
-	m_client_secret( client_secret )
+	m_client_secret( client_secret ),
+	m_redirect_uri( redirect_uri )
 {
 }
 
@@ -61,7 +65,7 @@ void OAuth2::Auth( const std::string&	auth_code )
 		"code="				+ auth_code +
 		"&client_id="		+ m_client_id +
 		"&client_secret="	+ m_client_secret +
-		"&redirect_uri="	+ "urn:ietf:wg:oauth:2.0:oob" +
+		"&redirect_uri="	+ m_redirect_uri +
 		"&grant_type=authorization_code" ;
 
 	http::ValResponse  resp ;
@@ -85,7 +89,7 @@ std::string OAuth2::MakeAuthURL()
 {
 	return "https://accounts.google.com/o/oauth2/auth"
 		"?scope=" + m_agent->Escape( "https://www.googleapis.com/auth/drive" ) +
-		"&redirect_uri=urn:ietf:wg:oauth:2.0:oob"
+		"&redirect_uri=" + m_redirect_uri +
 		"&response_type=code"
 		"&client_id=" + m_client_id ;
 }
