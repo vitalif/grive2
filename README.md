@@ -1,3 +1,28 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Grive2 0.5.2-dev](#grive2-052-dev)
+  - [Usage](#usage)
+    - [Exclude specific files and folders from sync: .griveignore](#exclude-specific-files-and-folders-from-sync-griveignore)
+    - [Scheduled syncs and syncs on file change events](#scheduled-syncs-and-syncs-on-file-change-events)
+    - [Shared files](#shared-files)
+    - [Different OAuth2 client to workaround over quota and google approval issues](#different-oauth2-client-to-workaround-over-quota-and-google-approval-issues)
+  - [Installation](#installation)
+    - [Install dependencies](#install-dependencies)
+    - [Build Debian packages](#build-debian-packages)
+    - [Manual build](#manual-build)
+  - [Version History](#version-history)
+    - [Grive2 v0.5.2-dev](#grive2-v052-dev)
+    - [Grive2 v0.5.1](#grive2-v051)
+    - [Grive2 v0.5](#grive2-v05)
+    - [Grive2 v0.4.2](#grive2-v042)
+    - [Grive2 v0.4.1](#grive2-v041)
+    - [Grive2 v0.4.0](#grive2-v040)
+    - [Grive v0.3](#grive-v03)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Grive2 0.5.2-dev
 
 13 Nov 2019, Vitaliy Filippov
@@ -154,7 +179,7 @@ You need the following libraries:
 - libgcrypt
 - Boost (Boost filesystem, program_options, regex, unit_test_framework and system are required)
 - expat
-- libcpprest-dev
+- [libcpprest-dev](https://github.com/Microsoft/cpprestsdk)
 
 There are also some optional dependencies:
 - CppUnit (for unit tests)
