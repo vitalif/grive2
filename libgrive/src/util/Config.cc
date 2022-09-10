@@ -32,9 +32,10 @@ namespace po = boost::program_options;
 
 namespace gr {
 
-const std::string	default_filename	= ".grive";
-const char			*env_name			= "GR_CONFIG";
-const std::string	default_root_folder = ".";
+const char *env_name                   = "GR_CONFIG";
+const std::string default_filename     = ".grive";
+const std::string default_root_folder  = ".";
+const std::string default_redirect_uri = "http://localhost:9898" ;
 
 Config::Config( const po::variables_map& vm )
 {
@@ -47,8 +48,6 @@ Config::Config( const po::variables_map& vm )
 	m_cmd.Add( "path",		Val(vm.count("path") > 0
 		? vm["path"].as<std::string>()
 		: default_root_folder ) ) ;
-	if ( vm.count( "redirect_uri" ) > 0 )
-		m_cmd.Add( "redirect_uri",	Val( vm["redirect_uri"].as<std::string>() ) ) ;
 	m_cmd.Add( "dir",		Val(vm.count("dir") > 0
 		? vm["dir"].as<std::string>()
 		: "" ) ) ;
@@ -60,6 +59,14 @@ Config::Config( const po::variables_map& vm )
 	
 	m_path	= GetPath( fs::path(m_cmd["path"].Str()) ) ;
 	m_file	= Read( ) ;
+
+	if ( vm.count( "redirect-uri" ) > 0 ) {
+		m_cmd.Add( "redirect-uri", Val( vm["redirect-uri"].as<std::string>() ) );
+	} else if (m_file.Has( "redirect-uri" )) {
+		;
+	} else {
+		m_cmd.Add( "redirect-uri", Val( default_redirect_uri ) );
+	}
 }
 
 fs::path Config::GetPath( const fs::path& root_path )
@@ -86,7 +93,7 @@ void Config::Save( )
 
 void Config::Set( const std::string& key, const Val& value )
 {
-	m_file.Add( key, value ) ;
+	m_file.Set( key, value ) ;
 }
 
 Val Config::Get( const std::string& key ) const

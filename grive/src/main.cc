@@ -52,7 +52,6 @@
 
 const std::string default_id            = APP_ID ;
 const std::string default_secret        = APP_SECRET ;
-const std::string default_redirect_uri  = "http://localhost:9898" ;
 
 using namespace gr ;
 namespace po = boost::program_options;
@@ -110,7 +109,7 @@ void InitLog( const po::variables_map& vm )
 }
 
 // AuthCode reads an authorization code from the "code" query parameter passed
-// via client-side redirect to the redirect_uri specified in uri
+// via client-side redirect to the redirect uri specified in uri
 std::string AuthCode( std::string uri )
 {
 	// Set up an HTTP listener that is waiting for Google
@@ -249,9 +248,7 @@ int Main( int argc, char **argv )
 		std::string secret = vm.count( "secret" ) > 0
                         ? vm["secret"].as<std::string>()
                         : default_secret ;
-		std::string redirect_uri = vm.count( "redirect-uri" ) > 0
-			? vm["redirect-uri"].as<std::string>()
-			: default_redirect_uri ;
+		std::string redirect_uri = config.Get("redirect-uri").Str();
 
 		OAuth2 token( http.get(), id, secret, redirect_uri ) ;
 		
@@ -274,7 +271,7 @@ int Main( int argc, char **argv )
 		config.Set( "id", Val( id ) ) ;
 		config.Set( "secret", Val( secret ) ) ;
 		config.Set( "refresh_token", Val( token.RefreshToken() ) ) ;
-		config.Set( "redirect_uri", Val( redirect_uri ) ) ;
+		config.Set( "redirect-uri", Val( redirect_uri ) ) ;
 		config.Save() ;
 	}
 	
@@ -287,7 +284,7 @@ int Main( int argc, char **argv )
 		refresh_token = config.Get("refresh_token").Str() ;
 		id = config.Get("id").Str() ;
 		secret = config.Get("secret").Str() ;
-		redirect_uri = config.Get("redirect_uri").Str() ;
+		redirect_uri = config.Get("redirect-uri").Str() ;
 	}
 	catch ( Exception& e )
 	{
