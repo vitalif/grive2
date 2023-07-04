@@ -1,4 +1,5 @@
-.git
-Dockerfile
-.dockerignore
-.gitignore
+*
+!cmake
+!grive
+!libgrive
+!CMakeLists.txt
