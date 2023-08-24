@@ -17,8 +17,8 @@ cd ~
 SCRIPT="${0}"
 DIRECTORY=$(systemd-escape --unescape -- "$2")
 
-if [[ -z "$DIRECTORY" ]] || [[ ! -d "$DIRECTORY" ]] ; then
-	echo "Need a directory name in the current users home directory as second argument. Aborting."
+if [[ -z "${DIRECTORY}" ]] || [[ ! -d "${DIRECTORY}" ]] ; then
+	echo "Need a directory name (absolute or relative to the current users home directory) as second argument. Got ${DIRECTORY}. Aborting."
 	exit 1
 fi
 

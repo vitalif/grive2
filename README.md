@@ -80,22 +80,32 @@ Google Drive clients on other platforms (it misses the almost instantious
 download of changed files in the google drive).
 
 Grive installs such a basic solution which uses inotify-tools together with
-systemd timer and services. You can enable it for a folder in your `$HOME`
-directory (in this case the `$HOME/google-drive`):
+systemd timer and services. You can enable it for a directory. The name can
+either be an absolute path or one relative to `${HOME}`. Let's use
+`${HOME}/google-drive` (so relative: `google-drive`):
 
 First install the `inotify-tools` (seems to be named like that in all major distros): 
 test that it works by calling `inotifywait -h`.
 
-Prepare a Google Drive folder in your $HOME directory with `grive -a`.
+Prepare a Google Drive folder in your `${HOME}` directory with:
 
 ```bash
-# 'google-drive' is the name of your Google Drive folder in your $HOME directory
+mkdir -p ${HOME}/google-drive
+cd ${HOME}/google-drive
+grive -a
+```
+
+Afterwards, the scheduled sync can be enabled via:
+
+```bash
+# 'google-drive' is in this case the relative name of your Google Drive folder
+# in your ${HOME} directory
 systemctl --user enable grive@$(systemd-escape google-drive).service
 systemctl --user start grive@$(systemd-escape google-drive).service
 ```
 
-You can enable and start this unit for multiple folders in your `$HOME`
-directory if you need to sync with multiple google accounts.
+You can enable and start this unit for multiple folders if you need to sync
+with multiple google accounts.
 
 You can also only enable the time based syncing or the changes based syncing
 by only directly enabling and starting the corresponding unit:
