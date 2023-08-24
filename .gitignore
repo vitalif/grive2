@@ -25,3 +25,7 @@ debian/.debhelper
 obj-x86_64-linux-gnu/
 
 .idea
+
+systemd/grive-timer\@.service
+
+systemd/grive-changes\@.service
