@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Copyright (C) 2009 Przemyslaw Pawelczyk <przemoc@gmail.com>
-#           (C) 2017 Jan Schulz <jasc@gmx.net>             
+#           (C) 2017 Jan Katins <jasc@gmx.net>
 ##
 ## This script is licensed under the terms of the MIT license.
 ## https://opensource.org/licenses/MIT
@@ -9,13 +9,25 @@
 # Fail on all errors
 set -o pipefail
 
-# We always start in the current users home directory so that names always start there
-cd ~
+abort() {
+    echo >&2 "${*}";
+    exit 1;
+}
 
+check_command(){
+    type ${1} >/dev/null 2>&1 || abort "I require '${1}' command but it's not available. Aborting."
+}
+
+# We always start in the current users home directory so that names always start there
+cd ${HOME} || abort "Cannot switch to HOME dir: ${HOME}"
+
+check_command flock
+check_command inotifywait
+check_command ping
 
 ### ARGUMENT PARSING ###
 SCRIPT="${0}"
-DIRECTORY=$(systemd-escape --unescape -- "$2")
+DIRECTORY=$(systemd-escape --unescape -- "${2}")
 
 if [[ -z "${DIRECTORY}" ]] || [[ ! -d "${DIRECTORY}" ]] ; then
 	echo "Need a directory name (absolute or relative to the current users home directory) as second argument. Got ${DIRECTORY}. Aborting."
@@ -39,7 +51,7 @@ fi
 
 
 ### LOCKFILE BOILERPLATE ###
-LOCKFILE="/run/user/"$(id -u)"/"$(basename "$0")"_"${DIRECTORY//\//_}""
+LOCKFILE="/run/user/$(id -u)/$(basename "$0")_${DIRECTORY//\//_}"
 LOCKFD=99
 
 # PRIVATE
@@ -57,13 +69,13 @@ shlock()            { _lock s; }   # obtain a shared lock
 unlock()            { _lock u; }   # drop a lock
 
 ### SYNC SCRIPT ###
-# Idea: only let one script run, but if the sync script is called a second time 
+# Idea: only let one script run, but if the sync script is called a second time
 # make sure we sync a second time, too
 
 sync_directory() {
 	_directory="${1}"
 
-	reset_timer_and_exit() { echo "Retriggered google drive sync ('${_directory}')" && touch -m $LOCKFILE && exit; }
+	reset_timer_and_exit() { echo "Retriggered google drive sync ('${_directory}')" && touch -m "${LOCKFILE}" && exit; }
 
 	exlock_now || reset_timer_and_exit
 
@@ -79,11 +91,12 @@ sync_directory() {
 	TIME_AT_START=0
 	TIME_AT_END=1
 	while [[ "${TIME_AT_START}" -lt "${TIME_AT_END}" ]]; do
-	    echo "Syncing '${_directory}'..." 
-	    TIME_AT_START="$(stat -c %Y "$LOCKFILE")"
-	    grive -p "${_directory}" 2>&1 | grep -v -E "^Reading local directories$|^Reading remote server file list$|^Synchronizing files$|^Finished!$"
-	    TIME_AT_END="$(stat -c %Y "$LOCKFILE")"
-	    echo "Sync of '${_directory}' done." 
+	    echo "Syncing '${_directory}'..."
+	    TIME_AT_START="$(stat -c %Y "${LOCKFILE}")"
+	    # brace group: only error in case grive fails or hung, not because grep filtered out everything when nothing needed to be synced...
+	    grive -p "${_directory}" 2>&1 | { grep -v -E "^Reading local directories$|^Reading remote server file list$|^Synchronizing files$|^Finished!$" || true ; }
+	    TIME_AT_END="$(stat -c %Y "${LOCKFILE}")"
+	    echo "Sync of '${_directory}' done."
 	done
 
 	# always exit ok, so that we never go into a wrong systemd state
@@ -97,15 +110,13 @@ sync_directory() {
 listen_directory() {
 	_directory="${1}"
 
-	type inotifywait >/dev/null 2>&1 || { echo >&2 "I require inotifywait but it's not installed. Aborting."; exit 1; }
-
 	echo "Listening for changes in '${_directory}'"
 
 	while true #run indefinitely
-	do 
+	do
 		# Use a different call to not need to change exit into return
-		inotifywait -q -r -e modify,attrib,close_write,move,create,delete --exclude ".grive_state|.grive" "${_directory}" > /dev/null 2>&1 && ${SCRIPT} sync $(systemd-escape "${_directory}")
-		#echo ${SCRIPT} "${_directory}"
+		# Ignore errors
+		inotifywait -q -r -e modify,attrib,close_write,move,create,delete --exclude ".grive_state|.grive" "${_directory}" > /dev/null 2>&1 && ${SCRIPT} sync "$(systemd-escape "${_directory}")" || continue
 	done
 
 	# always exit ok, so that we never go into a wrong systemd state
