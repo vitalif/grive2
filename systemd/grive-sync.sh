@@ -22,12 +22,18 @@ check_command(){
 cd ${HOME} || abort "Cannot switch to HOME dir: ${HOME}"
 
 check_command flock
+check_command timeout
 check_command inotifywait
 check_command ping
 
 ### ARGUMENT PARSING ###
 SCRIPT="${0}"
 DIRECTORY=$(systemd-escape --unescape -- "${2}")
+
+# Defaults:
+# let grive run for 20min and then abort, assuming that it hangs. This might be wrong for big syncs,
+# but we will restart...
+GRIVE_TIMEOUT="${GRIVE_TIMEOUT:-20m}"
 
 if [[ -z "${DIRECTORY}" ]] || [[ ! -d "${DIRECTORY}" ]] ; then
 	echo "Need a directory name (absolute or relative to the current users home directory) as second argument. Got ${DIRECTORY}. Aborting."
@@ -94,7 +100,7 @@ sync_directory() {
 	    echo "Syncing '${_directory}'..."
 	    TIME_AT_START="$(stat -c %Y "${LOCKFILE}")"
 	    # brace group: only error in case grive fails or hung, not because grep filtered out everything when nothing needed to be synced...
-	    grive -p "${_directory}" 2>&1 | { grep -v -E "^Reading local directories$|^Reading remote server file list$|^Synchronizing files$|^Finished!$" || true ; }
+	    timeout "${GRIVE_TIMEOUT}" grive -p "${_directory}" 2>&1 | { grep -v -E "^Reading local directories$|^Reading remote server file list$|^Synchronizing files$|^Finished!$" || true ; }
 	    TIME_AT_END="$(stat -c %Y "${LOCKFILE}")"
 	    echo "Sync of '${_directory}' done."
 	done
