@@ -1,4 +1,4 @@
-FROM alpine:3.7 as build
+FROM alpine:3.19 as build
 
 RUN apk add make cmake g++ libgcrypt-dev yajl-dev yajl \
 	boost-dev curl-dev expat-dev cppunit-dev binutils-dev \
