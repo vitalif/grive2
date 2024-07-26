@@ -22,7 +22,7 @@ ENDIF ( CPPUNIT_FOUND )
 
 # build bfd classes if libbfd and the backtrace library is found
 if ( BFD_FOUND AND Backtrace_FOUND )
-	set( OPT_LIBS	${DL_LIBRARY} ${BFD_LIBRARY} ${Backtrace_LIBRARY} )
+	set( OPT_LIBS	${BFD_LIBRARY} ${Backtrace_LIBRARY} )
 	file( GLOB OPT_SRC
 		src/bfd/*.cc
 	)
