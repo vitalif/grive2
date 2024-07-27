@@ -11,8 +11,6 @@
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 
-# libgcrypt is moving to pkg-config, but earlier version don't have it
-
 #search in typical paths for libgcrypt-config
 FIND_PROGRAM(LIBGCRYPTCONFIG_EXECUTABLE NAMES libgcrypt-config)
 
@@ -27,18 +25,23 @@ IF(LIBGCRYPTCONFIG_EXECUTABLE)
 
   EXEC_PROGRAM(${LIBGCRYPTCONFIG_EXECUTABLE} ARGS --cflags RETURN_VALUE _return_VALUE OUTPUT_VARIABLE LIBGCRYPT_CFLAGS)
 
-  string(REPLACE "fgrep: warning: fgrep is obsolescent; using grep -F" "" LIBGCRYPT_LIBRARIES "${LIBGCRYPT_LIBRARIES}")
-  string(STRIP "${LIBGCRYPT_LIBRARIES}" LIBGCRYPT_LIBRARIES)
-
-  IF(${LIBGCRYPT_CFLAGS} MATCHES "\n")
-    SET(LIBGCRYPT_CFLAGS " ")
-  ENDIF(${LIBGCRYPT_CFLAGS} MATCHES "\n")
-
-  IF(LIBGCRYPT_LIBRARIES AND LIBGCRYPT_CFLAGS)
-    SET(LIBGCRYPT_FOUND TRUE)
-  ENDIF(LIBGCRYPT_LIBRARIES AND LIBGCRYPT_CFLAGS)
-
+ELSE()
+   # libgcrypt is moving to pkg-config, but earlier version don't have it
+   MESSAGE(STATUS "Couldn't find libgcrypt-config, using pkg-config instead...")
+   EXEC_PROGRAM("pkg-config" ARGS libgcrypt --libs RETURN_VALUE _return_VALUE OUTPUT_VARIABLE LIBGCRYPT_LIBRARIES)
+   EXEC_PROGRAM("pkg-config" ARGS libgcrypt --cflags RETURN_VALUE _return_VALUE OUTPUT_VARIABLE LIBGCRYPT_CFLAGS)
 ENDIF(LIBGCRYPTCONFIG_EXECUTABLE)
+
+string(REPLACE "fgrep: warning: fgrep is obsolescent; using grep -F" "" LIBGCRYPT_LIBRARIES "${LIBGCRYPT_LIBRARIES}")
+string(STRIP "${LIBGCRYPT_LIBRARIES}" LIBGCRYPT_LIBRARIES)
+
+IF(${LIBGCRYPT_CFLAGS} MATCHES "\n")
+    SET(LIBGCRYPT_CFLAGS " ")
+ENDIF(${LIBGCRYPT_CFLAGS} MATCHES "\n")
+
+IF(LIBGCRYPT_LIBRARIES AND LIBGCRYPT_CFLAGS)
+    SET(LIBGCRYPT_FOUND TRUE)
+ENDIF(LIBGCRYPT_LIBRARIES AND LIBGCRYPT_CFLAGS)
 
 if (LIBGCRYPT_FOUND)
    if (NOT LibGcrypt_FIND_QUIETLY)
