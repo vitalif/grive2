@@ -17,8 +17,11 @@ cd ~
 SCRIPT="${0}"
 DIRECTORY=$(systemd-escape --unescape -- "$2")
 
-if [[ -z "$DIRECTORY" ]] || [[ ! -d "$DIRECTORY" ]] ; then
-	echo "Need a directory name in the current users home directory as second argument. Aborting."
+# Check for an empty variable
+if [[ -z "$DIRECTORY" ]] ||
+# We need to check for directories inside users home directory and outside of it
+            ( [[ ! -d "/$DIRECTORY" ]] && [[ ! -d "$DIRECTORY" ]] ); then
+	echo "Need a valid directory name as second argument. Aborting."
 	exit 1
 fi
 
