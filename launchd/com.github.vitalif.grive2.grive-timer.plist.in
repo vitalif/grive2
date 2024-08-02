@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>Label</key>
+		<string>com.github.vitalif.grive2.grive-timer</string>
+		<key>ProgramArguments</key>
+		<array>
+			<string>@GRIVE_SYNC_SH_BINARY@</string>
+			<string>sync</string>
+			<string>RELATIVE PATH FROM $HOME TO SYNC HERE</string>
+		</array>
+		<key>RunAtLoad</key>
+		<true />
+		<key>StartInterval</key>
+		<!-- Every 5 minutes -->
+		<integer>300</integer>
+		<key>StandardOutPath</key>
+		<!-- Change HOME below to your $HOME path, e.g. /Users/name -->
+		<string>HOME/Library/Logs/grive2.log</string>
+		<key>StandardErrorPath</key>
+		<string>HOME/Library/Logs/grive2.log</string>
+	</dict>
+</plist>
