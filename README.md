@@ -152,7 +152,7 @@ You need the following libraries:
 - libcurl
 - libstdc++
 - libgcrypt
-- Boost (Boost filesystem, program_options, regex, unit_test_framework and system are required)
+- Boost (Boost filesystem, program_options, regex, and unit_test_framework are required)
 - expat
 
 There are also some optional dependencies:
